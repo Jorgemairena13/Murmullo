@@ -19,6 +19,11 @@ Route::post('/users',[UserController::class,'store']);
 // Actualizar un usuario
 Route::put('users/{id}', [UserController::class,'update']);
 
+// Actualizar parte de un usuario
+Route::patch('users/{id}',[UserController::class,'updatePartial']);
+
 // Borrar un usuario
 Route::delete('users/{id}', [UserController::class,'destroy']);
+
+
 
