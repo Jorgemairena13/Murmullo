@@ -62,19 +62,83 @@ class AuthController extends Controller
             'token' => $token,
             'status' => 201
         ], 201);
+    }
+
+    // Funcion de login
+    public function login(Request $request)
+    {
+        $validar_datos = Validator::make($request->all(), [
+            'email'    => 'required|email|',
+            'password' => 'required|string|min:6'
+        ]);
+
+        if ($validar_datos->fails()) {
+            $data = [
+                'message' => 'Error en la validacion de datos',
+                'errors' => $validar_datos->errors(),
+                'status' => 400
+            ];
+            return response()->json($data, 400);
+        }
+
+        $email = $request->email;
+        $password = $request->password;
+
+        $user = User::where('email',$email)->first();
+
+        if(!$user){
+            $data = [
+                'message'=>'Error en la validacion',
+                'status'=>400
+
+            ];
+            return response()->json($data, 400);
+        }
+
+        $userMail = $user->email;
+        $userPassword = $user->password;
+
+        if(!$userPassword){
+            $data = [
+                'message'=>'Error en la validacion',
+                'status'=>400
+
+            ];
+            return response()->json($data, 400);
+        }
+        $passwordVerify = Hash::check($password,$userPassword);
+
+        if(!$passwordVerify){
+            $data = [
+                'message'=>'Error en la validacion',
+                'status'=>400
+
+            ];
+            return response()->json($data, 400);
+        }
 
 
-    }
-    public function login()
-    {
-        
-    }
-    public function logout()
-    {
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'message' => 'Estamos en la función de cerrar sesion'
+            'message'=> 'Login correcto',
+            'token'=> $token,
+            'status'=> 200
+        ],200);
+    }
+
+
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Sesión cerrada correctamente',
+            'status'=>200
         ]);
     }
+
     public function getUser()
     {
         return response()->json([

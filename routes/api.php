@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Route;
 
 
@@ -31,3 +32,7 @@ Route::post('register',[AuthController::class,'register']);
 
 // Logear usuario
 Route::post('login',[AuthController::class,'login']);
+
+// Cerrar sesion
+Route::middleware('auth:sanctum')->delete('/logout', [AuthController::class, 'logout']);
+
