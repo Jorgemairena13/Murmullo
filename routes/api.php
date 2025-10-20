@@ -26,4 +26,8 @@ Route::patch('users/{id}',[UserController::class,'updatePartial']);
 Route::delete('users/{id}', [UserController::class,'destroy']);
 
 
+// Registar usuario
+Route::post('register',[AuthController::class,'register']);
 
+// Logear usuario
+Route::post('login',[AuthController::class,'login']);
