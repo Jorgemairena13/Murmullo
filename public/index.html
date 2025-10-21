@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Usuario - Murmullo</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fafafa; margin: 0; }
+        .container { max-width: 935px; margin: 20px auto; padding: 20px; }
+        .profile-header { display: flex; align-items: center; margin-bottom: 40px; }
+        .profile-avatar { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-right: 60px; }
+        .profile-info { font-size: 16px; }
+        .profile-info h1 { font-size: 28px; font-weight: 300; margin: 0 0 10px; }
+        .profile-info p { margin: 0 0 10px; }
+        .profile-stats { display: flex; margin-bottom: 20px; }
+        .profile-stats div { margin-right: 40px; }
+        .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .post { position: relative; padding-bottom: 100%; /* Aspect ratio 1:1 */ }
+        .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        #loader { text-align: center; padding: 20px; font-weight: bold; }
+        #loadMoreBtn { display: none; width: 100%; padding: 10px; background-color: #3897f0; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="profile-header" id="profileHeader"></header>
+
+        <hr>
+
+        <div class="posts-grid" id="postsGrid"></div>
+        
+        <div id="loader">Cargando perfil...</div>
+
+        <button id="loadMoreBtn">Cargar más</button>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        // ¡IMPORTANTE! Pega aquí tu Bearer Token válido.
+        const authToken = '2|qlmVqw94kyk5q69K4koRSO2MrYVybaIM1wZXGtDdd96cb171'; 
+        
+        // El ID del usuario cuyo perfil quieres ver.
+        const userId = 1; 
+
+        // URL base de tu API.
+        const apiBaseUrl = 'http://127.0.0.1:8000/api';
+
+        // --- ELEMENTOS DEL DOM ---
+        const profileHeader = document.getElementById('profileHeader');
+        const postsGrid = document.getElementById('postsGrid');
+        const loader = document.getElementById('loader');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        
+        let nextPageUrl = null; // Variable para guardar la URL de la siguiente página
+
+        // --- FUNCIÓN PARA RENDERIZAR POSTS ---
+        function renderPosts(posts) {
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+
+                const imgElement = document.createElement('img');
+                imgElement.src = post.imagen_url; // Usamos la URL completa del accesor
+                imgElement.alt = post.texto || 'Publicación de usuario';
+                
+                postElement.appendChild(imgElement);
+                postsGrid.appendChild(postElement);
+            });
+        }
+
+        // --- FUNCIÓN PRINCIPAL PARA CARGAR EL PERFIL ---
+        async function fetchUserProfile(url) {
+            loader.style.display = 'block';
+            loadMoreBtn.style.display = 'none';
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                         throw new Error('Token no válido o caducado. Por favor, revisa tu token.');
+                    }
+                    throw new Error(`Error en la petición: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                // Renderizar el header del perfil (solo la primera vez)
+                if (!profileHeader.innerHTML) {
+                    profileHeader.innerHTML = `
+                        <img src="${data.user.avatar}" alt="Avatar de ${data.user.nombre}" class="profile-avatar">
+                        <div class="profile-info">
+                            <h1>${data.user.nombre}</h1>
+                            <div class="profile-stats">
+                                <div><strong>${data.user.posts_count}</strong> publicaciones</div>
+                            </div>
+                            <p><strong>${data.user.nombre}</strong></p>
+                            <p>${data.user.bio}</p>
+                        </div>
+                    `;
+                }
+
+                // Renderizar los posts de la página actual
+                renderPosts(data.posts.data);
+
+                // Guardar la URL de la siguiente página
+                nextPageUrl = data.posts.next_page_url;
+
+                // Mostrar u ocultar el botón "Cargar más"
+                if (nextPageUrl) {
+                    loadMoreBtn.style.display = 'block';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+
+            } catch (error) {
+                loader.textContent = `Error al cargar el perfil: ${error.message}`;
+                console.error('Error:', error);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // --- EVENT LISTENER PARA EL BOTÓN "CARGAR MÁS" ---
+        loadMoreBtn.addEventListener('click', () => {
+            if (nextPageUrl) {
+                fetchUserProfile(nextPageUrl);
+            }
+        });
+
+        // --- LLAMADA INICIAL ---
+        // Inicia la carga del perfil del usuario cuando la página carga.
+        fetchUserProfile(`${apiBaseUrl}/users/${userId}/posts`);
+
+    </script>
+</body>
+</html>

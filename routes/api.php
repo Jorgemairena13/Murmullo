@@ -3,36 +3,44 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
+use App\Models\Post;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Route;
 
 
 
 // Conseguir todos los usuarios
-Route::get('/users',[UserController::class,'index']);
+Route::get('/users', [UserController::class, 'index']);
 
 // Conseguir un usuario
-Route::get('/users/{id}',[UserController::class,'show']);
+Route::get('/users/{id}', [UserController::class, 'show']);
 
 // Crear un usuario
-Route::post('/users',[UserController::class,'store']);
+Route::post('/users', [UserController::class, 'store']);
 
 // Actualizar un usuario
-Route::put('users/{id}', [UserController::class,'update']);
+Route::put('users/{id}', [UserController::class, 'update']);
 
 // Actualizar parte de un usuario
-Route::patch('users/{id}',[UserController::class,'updatePartial']);
+Route::patch('users/{id}', [UserController::class, 'updatePartial']);
 
 // Borrar un usuario
-Route::delete('users/{id}', [UserController::class,'destroy']);
+Route::delete('users/{id}', [UserController::class, 'destroy']);
 
 
 // Registar usuario
-Route::post('register',[AuthController::class,'register']);
+Route::post('register', [AuthController::class, 'register']);
 
 // Logear usuario
-Route::post('login',[AuthController::class,'login']);
+Route::post('login', [AuthController::class, 'login']);
 
-// Cerrar sesion
-Route::middleware('auth:sanctum')->delete('/logout', [AuthController::class, 'logout']);
 
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Cerra sesion
+    Route::delete('/logout', [AuthController::class, 'logout']);
+    // Posts
+    Route::apiResource('posts', PostController::class);
+    // Sacar post del usuario
+    Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
+});

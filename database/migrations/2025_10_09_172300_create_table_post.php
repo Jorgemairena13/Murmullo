@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->text('texto')->nullable();
-            $table->string('imagen')->nullable();
+            $table->string('imagen');
             $table->timestamps();
 
             $table->foreign('user_id')
