@@ -17,16 +17,13 @@ class PostController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
+        // Validación
         $validarDatos = Validator::make($request->all(), [
-
             'texto' => 'nullable|string|max:1000',
-
-            'imagen' => 'image|max:2048'
+            'imagen' => 'nullable|image|max:2048', // imagen opcional
         ]);
 
         if ($validarDatos->fails()) {
@@ -35,16 +32,29 @@ class PostController extends Controller
 
         $imageUrl = null;
 
+        // Procesar imagen si se envía
         if ($request->hasFile('imagen')) {
-            $imageUrl = $request->file('imagen')->store('posts', 'public');
+            $file = $request->file('imagen');
+
+            if (!$file->isValid()) {
+                return response()->json([
+                    'errors' => ['imagen' => ['Archivo no válido o fallo al subir.']],
+                    'errorCode' => $file->getError()
+                ], 422);
+            }
+
+            $imageUrl = $file->store('posts', 'public');
         }
 
+        // Crear post
         $post = $request->user()->posts()->create([
             'texto' => $request->texto,
             'imagen' => $imageUrl
         ]);
+
         return response()->json($post, 201);
     }
+
 
     /**
      * Display the specified resource.
@@ -56,15 +66,15 @@ class PostController extends Controller
         $posts = $user->posts()->latest()->paginate(12);
 
         return response()->json([
-        'user' => [
-            'id' => $user->id,
-            'nombre' => $user->nombre,
-            'avatar' => $user->avatar,
-            'bio' => $user->bio,
-            'posts_count' => $user->posts()->count()
-        ],
-        'posts' => $posts 
-    ]);
+            'user' => [
+                'id' => $user->id,
+                'nombre' => $user->nombre,
+                'avatar' => $user->avatar,
+                'bio' => $user->bio,
+                'posts_count' => $user->posts()->count()
+            ],
+            'posts' => $posts
+        ]);
     }
 
     public function show(string $id)

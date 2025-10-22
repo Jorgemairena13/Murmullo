@@ -9,7 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,9 @@ class User extends Authenticatable
         'avatar',
         'password',
     ];
+    protected $appends = [
+        'avatar_url', 
+    ];
 
 
     protected $hidden = [
@@ -34,4 +38,11 @@ class User extends Authenticatable
         return $this->hasMany(Post::class);
     }
 
+
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->avatar ? Storage::url($this->avatar) : null,
+        );
+    }
 }

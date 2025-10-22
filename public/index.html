@@ -29,7 +29,7 @@
         <hr>
 
         <div class="posts-grid" id="postsGrid"></div>
-        
+
         <div id="loader">Cargando perfil...</div>
 
         <button id="loadMoreBtn">Cargar más</button>
@@ -37,22 +37,29 @@
 
     <script>
         // --- CONFIGURACIÓN ---
-        // ¡IMPORTANTE! Pega aquí tu Bearer Token válido.
-        const authToken = '2|qlmVqw94kyk5q69K4koRSO2MrYVybaIM1wZXGtDdd96cb171'; 
-        
-        // El ID del usuario cuyo perfil quieres ver.
-        const userId = 1; 
-
-        // URL base de tu API.
+        const authToken = '4|29st2BY5XH879SnxYJ17ohvJPdqV36RJ2A6gvY6z2f3d10ef';
+        const userId = 2;
         const apiBaseUrl = 'http://127.0.0.1:8000/api';
+        const serverBaseUrl = 'http://127.0.0.1:8000'; // <-- CAMBIO 1: Añade esta línea
 
         // --- ELEMENTOS DEL DOM ---
         const profileHeader = document.getElementById('profileHeader');
         const postsGrid = document.getElementById('postsGrid');
         const loader = document.getElementById('loader');
         const loadMoreBtn = document.getElementById('loadMoreBtn');
-        
-        let nextPageUrl = null; // Variable para guardar la URL de la siguiente página
+
+        let nextPageUrl = null;
+
+        // --- FUNCIÓN PARA OBTENER URL COMPLETA ---
+        // <-- CAMBIO 2: Añadimos una función "ayudante"
+        function getFullUrl(relativePath) {
+            // Si la ruta ya es completa (empieza con http) o está vacía, la devolvemos tal cual.
+            if (!relativePath || relativePath.startsWith('http')) {
+                return relativePath;
+            }
+            // Si es relativa (ej. /storage/...), le añadimos la base del servidor.
+            return `${serverBaseUrl}${relativePath}`;
+        }
 
         // --- FUNCIÓN PARA RENDERIZAR POSTS ---
         function renderPosts(posts) {
@@ -61,9 +68,12 @@
                 postElement.className = 'post';
 
                 const imgElement = document.createElement('img');
-                imgElement.src = post.imagen_url; // Usamos la URL completa del accesor
+
+                // <-- CAMBIO 3: Usamos la función ayudante
+                imgElement.src = getFullUrl(post.imagen_url);
+
                 imgElement.alt = post.texto || 'Publicación de usuario';
-                
+
                 postElement.appendChild(imgElement);
                 postsGrid.appendChild(postElement);
             });
@@ -84,17 +94,21 @@
 
                 if (!response.ok) {
                     if (response.status === 401) {
-                         throw new Error('Token no válido o caducado. Por favor, revisa tu token.');
+                        throw new Error('Token no válido o caducado. Por favor, revisa tu token.');
                     }
                     throw new Error(`Error en la petición: ${response.statusText}`);
                 }
 
                 const data = await response.json();
-                
+
                 // Renderizar el header del perfil (solo la primera vez)
                 if (!profileHeader.innerHTML) {
+
+                    // <-- CAMBIO 4: Usamos la función ayudante para el AVATAR
+                    const avatarUrl = getFullUrl(data.user.avatar_url);
+
                     profileHeader.innerHTML = `
-                        <img src="${data.user.avatar}" alt="Avatar de ${data.user.nombre}" class="profile-avatar">
+                        <img src="${avatarUrl}" alt="Avatar de ${data.user.nombre}" class="profile-avatar">
                         <div class="profile-info">
                             <h1>${data.user.nombre}</h1>
                             <div class="profile-stats">
@@ -135,7 +149,6 @@
         });
 
         // --- LLAMADA INICIAL ---
-        // Inicia la carga del perfil del usuario cuando la página carga.
         fetchUserProfile(`${apiBaseUrl}/users/${userId}/posts`);
 
     </script>
