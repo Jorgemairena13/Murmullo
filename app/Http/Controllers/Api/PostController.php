@@ -3,98 +3,112 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Post;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\PostResource;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
+
+
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Feed principal del usuario
     public function index()
     {
-        //
+
+        $posts = Post::with('user')
+            ->withCount('likes')
+            ->latest()
+            ->paginate(15);
+
+
+        return PostResource::collection($posts);
     }
 
-    
-    public function store(Request $request)
+    // Guarda un post nuevo
+    public function store(StorePostRequest $request)
     {
-        // Validación
-        $validarDatos = Validator::make($request->all(), [
-            'texto' => 'nullable|string|max:1000',
-            'imagen' => 'nullable|image|max:2048', // imagen opcional
-        ]);
 
-        if ($validarDatos->fails()) {
-            return response()->json(['errors' => $validarDatos->errors()], 422);
-        }
+        $imagePath = $request->file('imagen')->store('posts', 'public');
 
-        $imageUrl = null;
 
-        // Procesar imagen si se envía
-        if ($request->hasFile('imagen')) {
-            $file = $request->file('imagen');
-
-            if (!$file->isValid()) {
-                return response()->json([
-                    'errors' => ['imagen' => ['Archivo no válido o fallo al subir.']],
-                    'errorCode' => $file->getError()
-                ], 422);
-            }
-
-            $imageUrl = $file->store('posts', 'public');
-        }
-
-        // Crear post
         $post = $request->user()->posts()->create([
-            'texto' => $request->texto,
-            'imagen' => $imageUrl
+            'texto' => $request->validated('texto'),
+            'imagen' => $imagePath
         ]);
 
-        return response()->json($post, 201);
+
+        return (new PostResource($post))
+            ->response()
+            ->setStatusCode(201);
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-
+    // Mostrar post de usuario
     public function getUserPosts(User $user)
     {
 
+        $user->loadCount('posts');
+
+
         $posts = $user->posts()->latest()->paginate(12);
+
 
         return response()->json([
             'user' => [
                 'id' => $user->id,
                 'nombre' => $user->nombre,
-                'avatar' => $user->avatar,
+                'avatar_url' => $user->avatar ? Storage::url($user->avatar) : null,
                 'bio' => $user->bio,
-                'posts_count' => $user->posts()->count()
+                'posts_count' => $user->posts_count
             ],
-            'posts' => $posts
+
+            'posts' => PostResource::collection($posts)
         ]);
     }
 
-    public function show(string $id)
+
+    public function show(Post $post)
     {
-        //
+
+        $post->load(['user', 'comments.user']);
+        $post->loadCount(['likes', 'comments']);
+
+        return new PostResource($post);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+
+    //   Actualizar texto
+
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        //
+
+        $this->authorize('update', $post);
+
+
+        $post->update($request->validated());
+
+
+        return new PostResource($post);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+    //  Borra un post.
+
+    public function destroy(Post $post)
     {
-        //
+        // Ver si esta autorizado
+        $this->authorize('delete', $post);
+
+        // Borrar imagen
+        Storage::disk('public')->delete($post->imagen);
+
+        // Borrar de la base de datos
+        $post->delete();
+
+        // Devolver respuesta
+        return response()->json(null, 204);
     }
 }
