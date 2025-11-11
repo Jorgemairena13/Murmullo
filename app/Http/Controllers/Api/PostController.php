@@ -49,23 +49,27 @@ class PostController extends Controller
     // Mostrar post de usuario
     public function getUserPosts(User $user)
     {
-
         $user->loadCount('posts');
-
 
         $posts = $user->posts()->latest()->paginate(12);
 
 
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'nombre' => $user->nombre,
-                'avatar_url' => $user->avatar ? Storage::url($user->avatar) : null,
-                'bio' => $user->bio,
-                'posts_count' => $user->posts_count
-            ],
+        $userData = [
+            'id' => $user->id,
+            'nombre' => $user->nombre,
+            'avatar_url' => $user->avatar ? config('app.url') . Storage::url($user->avatar) : null,
+            'bio' => $user->bio,
+            'posts_count' => $user->posts_count
+        ];
 
-            'posts' => PostResource::collection($posts)
+
+        $paginatedPosts = PostResource::collection($posts)->resolve();
+
+
+        return response()->json([
+            'user' => $userData,
+            'posts' => $paginatedPosts,
+            'debug_app_url' => config('app.url')
         ]);
     }
 

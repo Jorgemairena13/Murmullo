@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\Post;
 use Illuminate\Container\Attributes\Auth;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 
 
@@ -43,4 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('posts', PostController::class);
     // Sacar post del usuario
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
+    // Dar me gusta
+    Route::post('/posts/{post}/like',[LikeController::class,'store']);
+    // Quitar me gusta
+    Route::post('/posts/{post}/like',[LikeController::class,'delete']);
 });

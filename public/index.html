@@ -3,270 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test API Murmullo</title>
+    <title>Perfil de Usuario - Murmullo</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        fieldset { background-color: #fafafa; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; padding: 15px; }
-        legend { font-size: 1.2em; font-weight: bold; padding: 0 10px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        input[type="text"], input[type="number"], input[type="file"] { width: 95%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-right: 5px; }
-        button:hover { background-color: #0056b3; }
-        button.delete { background-color: #dc3545; }
-        button.delete:hover { background-color: #c82333; }
-        pre { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 4px; overflow-x: auto; max-height: 400px; }
-        .config { background-color: #fffbef; border: 1px solid #ffeeba; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fafafa; margin: 0; }
+        .container { max-width: 935px; margin: 20px auto; padding: 20px; }
+        .profile-header { display: flex; align-items: center; margin-bottom: 40px; }
+        .profile-avatar { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-right: 60px; background-color: #eee; }
+        .profile-info { font-size: 16px; }
+        .profile-info h1 { font-size: 28px; font-weight: 300; margin: 0 0 10px; }
+        .profile-info p { margin: 0 0 10px; }
+        .profile-stats { display: flex; margin-bottom: 20px; }
+        .profile-stats div { margin-right: 40px; }
+        .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .post { position: relative; padding-bottom: 100%; /* Aspect ratio 1:1 */ background-color: #eee; }
+        .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        #loader { text-align: center; padding: 20px; font-weight: bold; }
+        #loadMoreBtn { display: none; width: 100%; padding: 10px; background-color: #3897f0; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+
+        /* Configuración de prueba */
+        .test-config { background: #fffbef; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .test-config label { font-weight: bold; display: block; margin-bottom: 5px; }
+        .test-config input { width: 98%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Campo de Pruebas API - Murmullo</h1>
 
-        <fieldset class="config">
-            <legend>Configuración Global</legend>
-            <label for="apiBaseUrl">URL Base de la API:</label>
-            <input type="text" id="apiBaseUrl" value="http://127.0.0.1:8000/api">
+        <div class="test-config">
+            <p>¡Pega tu token aquí para que la API te deje pasar!</p>
+            <label for="authToken">Tu Bearer Token:</label>
+            <input type="text" id="authToken" placeholder="Pega el token que te dio el login/register...">
 
-            <label for="authToken">Bearer Token (Obligatorio para POST/PUT/DELETE):</label>
-            <input type="text" id="authToken" placeholder="Pega tu token de login aquí...">
-        </fieldset>
-
-        <fieldset>
-            <legend>Crear Post (Store) - POST /posts</legend>
-            <form id="createPostForm">
-                <label for="postText">Texto (Opcional):</label>
-                <input type="text" id="postText" name="texto" placeholder="Descripción del post...">
-
-                <label for="postImage">Imagen (Obligatoria):</label>
-                <input type="file" id="postImage" name="imagen" required>
-
-                <button type="submit">Crear Post</button>
-            </form>
-        </fieldset>
-
-        <fieldset>
-            <legend>Ver Perfil de Usuario (getUserPosts) - GET /users/{id}/posts</legend>
-            <label for="userId">User ID:</label>
+            <label for="userId">ID de Usuario a ver:</label>
             <input type="number" id="userId" value="1" min="1">
-            <button id="fetchUserPostsBtn">Ver Perfil</button>
-        </fieldset>
 
-        <fieldset>
-            <legend>Ver Todos los Posts (Index) - GET /posts</legend>
-            <button id="fetchAllPostsBtn">Ver Todos</button>
-        </fieldset>
+            <button id="loadProfileBtn" style="background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Cargar Perfil</button>
+        </div>
+        <header class="profile-header" id="profileHeader"></header>
 
-        <fieldset>
-            <legend>Operaciones con Post Específico</legend>
-            <label for="postId">Post ID:</label>
-            <input type="number" id="postId" placeholder="ID del post a ver/editar/borrar" min="1">
-            <br>
-            <button id="fetchPostBtn">Ver Post (Show)</button>
+        <hr>
 
-            <button id="deletePostBtn" class="delete">Borrar Post (Destroy)</button>
+        <div class="posts-grid" id="postsGrid"></div>
 
-            <hr style="margin: 15px 0;">
-            <label for="updateText">Nuevo Texto para Actualizar:</label>
-            <input type="text" id="updateText" placeholder="Nuevo caption...">
-            <button id="updatePostBtn">Actualizar Post (Update)</button>
-        </fieldset>
+        <div id="loader">Introduce tu token y pulsa "Cargar Perfil"</div>
 
-        <fieldset>
-            <legend>Respuesta de la API</legend>
-            <button id="clearLogBtn" style="background-color: #6c757d;">Limpiar Log</button>
-            <pre id="responseOutput">Haz clic en un botón para probar un endpoint...</pre>
-        </fieldset>
+        <button id="loadMoreBtn">Cargar más</button>
     </div>
 
     <script>
-        // --- Elementos del DOM ---
-        const apiUrlInput = document.getElementById('apiBaseUrl');
+        // --- CONFIGURACIÓN ---
+        const apiBaseUrl = 'http://127.0.0.1:8000/api';
+
+        // --- ELEMENTOS DEL DOM ---
+        const profileHeader = document.getElementById('profileHeader');
+        const postsGrid = document.getElementById('postsGrid');
+        const loader = document.getElementById('loader');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const loadProfileBtn = document.getElementById('loadProfileBtn');
+
         const tokenInput = document.getElementById('authToken');
-        const responseOutput = document.getElementById('responseOutput');
+        const userIdInput = document.getElementById('userId');
 
-        // Helper para obtener URL y Token
-        const getApiUrl = () => apiUrlInput.value;
-        const getToken = () => tokenInput.value;
+        let nextPageUrl = null; // Para guardar la URL de la siguiente página
 
-        // Helper para mostrar la respuesta
-        function logResponse(data) {
-            responseOutput.textContent = JSON.stringify(data, null, 2);
+        // --- FUNCIÓN PARA RENDERIZAR EL HEADER DEL PERFIL ---
+        function renderProfileHeader(user) {
+            // Usamos || '' para evitar que se muestre "null" o "undefined"
+            const avatar = user.avatar_url || 'img/avatar_default.png'; // (pon una imagen por defecto si quieres)
+
+            profileHeader.innerHTML = `
+                <img src="${avatar}" alt="Avatar de ${user.nombre}" class="profile-avatar">
+                <div class="profile-info">
+                    <h1>${user.nombre}</h1>
+                    <div class="profile-stats">
+                        <div><strong>${user.posts_count}</strong> publicaciones</div>
+                    </div>
+                    <p><strong>${user.nombre}</strong></p>
+                    <p>${user.bio || ''}</p>
+                </div>
+            `;
         }
 
-        // Helper para headers
-        const getHeaders = (needsAuth = false) => {
-            const headers = new Headers();
-            headers.append('Accept', 'application/json');
-            if (needsAuth) {
-                headers.append('Authorization', `Bearer ${getToken()}`);
-            }
-            return headers;
+        // --- FUNCIÓN PARA RENDERIZAR POSTS ---
+        function renderPosts(posts) {
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+
+                const imgElement = document.createElement('img');
+                // ¡Esto ya viene como URL completa desde tu PostResource!
+                imgElement.src = post.imagen_url;
+                imgElement.alt = post.texto || 'Publicación de usuario';
+
+                postElement.appendChild(imgElement);
+                postsGrid.appendChild(postElement);
+            });
         }
 
-        // --- 1. CREAR POST (Store) ---
-        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            logResponse("Creando post...");
+        // --- FUNCIÓN PRINCIPAL PARA CARGAR EL PERFIL ---
+        async function fetchUserProfile(url) {
+            const token = tokenInput.value;
 
-            const formData = new FormData();
-            formData.append('texto', document.getElementById('postText').value);
-            formData.append('imagen', document.getElementById('postImage').files[0]);
-
-            try {
-                const response = await fetch(`${getApiUrl()}/posts`, {
-                    method: 'POST',
-                    headers: getHeaders(true), // Pasa 'true' para autenticación
-                    body: formData
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw data; // Lanza el error si la API devuelve 4xx o 5xx
-                logResponse(data);
-
-            } catch (error) {
-                logResponse({ error: "Error al crear post", details: error });
-            }
-        });
-
-        // --- 2. VER PERFIL DE USUARIO (getUserPosts) ---
-        document.getElementById('fetchUserPostsBtn').addEventListener('click', async () => {
-            const userId = document.getElementById('userId').value;
-            if (!userId) {
-                logResponse({ error: "Por favor, introduce un User ID." });
+            // Verificación simple
+            if (!token) {
+                loader.textContent = 'Error: Falta el Bearer Token.';
                 return;
             }
-            logResponse("Cargando perfil de usuario...");
+
+            loader.style.display = 'block';
+            loadMoreBtn.style.display = 'none';
 
             try {
-                const response = await fetch(`${getApiUrl()}/users/${userId}/posts`, {
-                    method: 'GET',
-                    headers: getHeaders(true) // Perfil de usuario puede ser privado
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}` // ¡La autenticación!
+                    }
                 });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Token no válido o caducado. Vuelve a hacer login.');
+                    }
+                    if (response.status === 404) {
+                        throw new Error('Usuario no encontrado.');
+                    }
+                    throw new Error(`Error en la petición: ${response.statusText}`);
+                }
 
                 const data = await response.json();
-                if (!response.ok) throw data;
-                logResponse(data);
 
-            } catch (error) {
-                logResponse({ error: `Error al obtener usuario ${userId}`, details: error });
-            }
-        });
+                // Renderizar el header del perfil (solo la primera vez)
+                if (!profileHeader.innerHTML) {
+                    renderProfileHeader(data.user);
+                }
 
-        // --- 3. VER TODOS LOS POSTS (Index) ---
-        document.getElementById('fetchAllPostsBtn').addEventListener('click', async () => {
-            logResponse("Cargando todos los posts...");
+                // Renderizar los posts de la página actual
+                renderPosts(data.posts);
 
-            try {
-                const response = await fetch(`${getApiUrl()}/posts`, {
-                    method: 'GET',
-                    headers: getHeaders(false) // El feed "Explorar" suele ser público
-                });
+                // Guardar la URL de la siguiente página
+                nextPageUrl = data.posts.next_page_url;
 
-                const data = await response.json();
-                if (!response.ok) throw data;
-                logResponse(data);
-
-            } catch (error) {
-                logResponse({ error: "Error al obtener posts", details: error });
-            }
-        });
-
-        // --- 4. VER POST ÚNICO (Show) ---
-        document.getElementById('fetchPostBtn').addEventListener('click', async () => {
-            const postId = document.getElementById('postId').value;
-            if (!postId) {
-                logResponse({ error: "Por favor, introduce un Post ID." });
-                return;
-            }
-            logResponse(`Cargando post ${postId}...`);
-
-            try {
-                const response = await fetch(`${getApiUrl()}/posts/${postId}`, {
-                    method: 'GET',
-                    headers: getHeaders(false)
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw data;
-                logResponse(data);
-
-            } catch (error) {
-                logResponse({ error: `Error al obtener post ${postId}`, details: error });
-            }
-        });
-
-        // --- 5. ACTUALIZAR POST (Update) ---
-        // Usamos POST con _method: 'PUT' para simular un formulario HTML
-        // y que funcione correctamente con la validación de Laravel.
-        document.getElementById('updatePostBtn').addEventListener('click', async () => {
-            const postId = document.getElementById('postId').value;
-            const newText = document.getElementById('updateText').value;
-            if (!postId) {
-                logResponse({ error: "Por favor, introduce un Post ID." });
-                return;
-            }
-            logResponse(`Actualizando post ${postId}...`);
-
-            const formData = new FormData();
-            formData.append('texto', newText);
-            formData.append('_method', 'PUT'); // ¡Magia de Laravel! (Method Spoofing)
-
-            try {
-                const response = await fetch(`${getApiUrl()}/posts/${postId}`, {
-                    method: 'POST', // Usamos POST para el method spoofing
-                    headers: getHeaders(true),
-                    body: formData
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw data;
-                logResponse(data);
-
-            } catch (error) {
-                logResponse({ error: `Error al actualizar post ${postId}`, details: error });
-            }
-        });
-
-        // --- 6. BORRAR POST (Destroy) ---
-        document.getElementById('deletePostBtn').addEventListener('click', async () => {
-            const postId = document.getElementById('postId').value;
-            if (!postId) {
-                logResponse({ error: "Por favor, introduce un Post ID." });
-                return;
-            }
-            if (!confirm(`¿Seguro que quieres borrar el post ${postId}?`)) {
-                return;
-            }
-            logResponse(`Borrando post ${postId}...`);
-
-            const formData = new FormData();
-            formData.append('_method', 'DELETE'); // Method Spoofing
-
-            try {
-                const response = await fetch(`${getApiUrl()}/posts/${postId}`, {
-                    method: 'POST', // Usamos POST para el method spoofing
-                    headers: getHeaders(true),
-                    body: formData
-                });
-
-                if (response.status === 204) { // 204 No Content
-                    logResponse({ success: `Post ${postId} borrado correctamente.` });
+                // Mostrar u ocultar el botón "Cargar más"
+                if (nextPageUrl) {
+                    loadMoreBtn.style.display = 'block';
                 } else {
-                    const data = await response.json();
-                    if (!response.ok) throw data;
-                    logResponse(data);
+                    loadMoreBtn.style.display = 'none';
                 }
 
             } catch (error) {
-                logResponse({ error: `Error al borrar post ${postId}`, details: error });
+                loader.textContent = `Error al cargar el perfil: ${error.message}`;
+                console.error('Error:', error);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // --- EVENT LISTENER PARA EL BOTÓN "CARGAR MÁS" ---
+        loadMoreBtn.addEventListener('click', () => {
+            if (nextPageUrl) {
+                fetchUserProfile(nextPageUrl);
             }
         });
 
-        // --- LIMPIAR LOG ---
-        document.getElementById('clearLogBtn').addEventListener('click', () => {
-            responseOutput.textContent = 'Log limpiado.';
+        // --- EVENT LISTENER PARA EL BOTÓN "CARGAR PERFIL" ---
+        loadProfileBtn.addEventListener('click', () => {
+            // Limpiamos el contenido anterior antes de cargar uno nuevo
+            profileHeader.innerHTML = '';
+            postsGrid.innerHTML = '';
+            nextPageUrl = null;
+
+            const userId = userIdInput.value;
+            const initialUrl = `${apiBaseUrl}/users/${userId}/posts`;
+            fetchUserProfile(initialUrl);
         });
 
     </script>

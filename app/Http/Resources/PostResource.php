@@ -14,8 +14,8 @@ class PostResource extends JsonResource
             'id' => $this->id,
             'texto' => $this->texto,
             // Covertir url
-            'imagen_url' => $this->imagen ? Storage::url($this->imagen) : null,
-            'created_at' => $this->created_at->diffForHumans(), // "hace 5 minutos"
+            'imagen_url' => $this->imagen ? config('app.url') . Storage::url($this->imagen) : null,
+            'created_at' => $this->created_at->diffForHumans(),
             'user' => new UserResource($this->whenLoaded('user')),
 
             // Conteos de like y comentarios
