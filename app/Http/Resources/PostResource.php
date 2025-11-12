@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\UserResource;
 
 class PostResource extends JsonResource
@@ -21,6 +22,13 @@ class PostResource extends JsonResource
             // Conteos de like y comentarios
             'likes_count' => $this->whenCounted('likes'),
             'comments_count' => $this->whenCounted('comments'),
+
+            'is_liked' =>$this->when(Auth::check(), function(){
+                return $this->likes->contains(Auth::id());
+            }
+            ),
+
+
         ];
     }
 }

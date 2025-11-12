@@ -42,11 +42,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Cerra sesion
     Route::delete('/logout', [AuthController::class, 'logout']);
     // Posts
-    Route::apiResource('posts', PostController::class);
+    Route::apiResource('/posts', PostController::class);
     // Sacar post del usuario
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
     // Dar me gusta
     Route::post('/posts/{post}/like',[LikeController::class,'store']);
     // Quitar me gusta
-    Route::post('/posts/{post}/like',[LikeController::class,'delete']);
+    Route::delete('/posts/{post}/like',[LikeController::class,'delete']);
 });

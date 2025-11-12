@@ -15,8 +15,45 @@
         .profile-stats { display: flex; margin-bottom: 20px; }
         .profile-stats div { margin-right: 40px; }
         .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-        .post { position: relative; padding-bottom: 100%; /* Aspect ratio 1:1 */ background-color: #eee; }
-        .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .post {
+            position: relative;
+            padding-bottom: 100%; /* Aspect ratio 1:1 */
+            background-color: #eee;
+            cursor: pointer;
+        }
+        .post img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- ESTILOS PARA EL CONTADOR DE LIKES --- */
+        .post-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            opacity: 0; /* Oculto por defecto */
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none; /* Para que no interfiera con futuros clicks */
+        }
+        .post:hover .post-overlay {
+            opacity: 1; /* Se muestra al pasar el ratón */
+        }
+        /* ------------------------------------- */
+
         #loader { text-align: center; padding: 20px; font-weight: bold; }
         #loadMoreBtn { display: none; width: 100%; padding: 10px; background-color: #3897f0; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
 
@@ -70,7 +107,7 @@
         // --- FUNCIÓN PARA RENDERIZAR EL HEADER DEL PERFIL ---
         function renderProfileHeader(user) {
             // Usamos || '' para evitar que se muestre "null" o "undefined"
-            const avatar = user.avatar_url || 'img/avatar_default.png'; // (pon una imagen por defecto si quieres)
+            const avatar = user.avatar_url || 'img/avatar_default.png';
 
             profileHeader.innerHTML = `
                 <img src="${avatar}" alt="Avatar de ${user.nombre}" class="profile-avatar">
@@ -92,11 +129,21 @@
                 postElement.className = 'post';
 
                 const imgElement = document.createElement('img');
-                // ¡Esto ya viene como URL completa desde tu PostResource!
                 imgElement.src = post.imagen_url;
                 imgElement.alt = post.texto || 'Publicación de usuario';
 
+                // --- AÑADIMOS EL OVERLAY DE LIKES ---
+                const overlayElement = document.createElement('div');
+                overlayElement.className = 'post-overlay';
+
+                // Usamos el 'likes_count' que viene de la API
+                // (Si es undefined, mostramos 0 por si acaso)
+                overlayElement.innerHTML = `❤️ ${post.likes_count || 0}`;
+
                 postElement.appendChild(imgElement);
+                postElement.appendChild(overlayElement); // Añadimos el overlay
+                // ------------------------------------
+
                 postsGrid.appendChild(postElement);
             });
         }
@@ -105,7 +152,6 @@
         async function fetchUserProfile(url) {
             const token = tokenInput.value;
 
-            // Verificación simple
             if (!token) {
                 loader.textContent = 'Error: Falta el Bearer Token.';
                 return;
@@ -118,13 +164,13 @@
                 const response = await fetch(url, {
                     headers: {
                         'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}` // ¡La autenticación!
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
                 if (!response.ok) {
                     if (response.status === 401) {
-                        throw new Error('Token no válido o caducado. Vuelve a hacer login.');
+                        throw new Error('Token no válido o caducado.');
                     }
                     if (response.status === 404) {
                         throw new Error('Usuario no encontrado.');
@@ -139,8 +185,8 @@
                     renderProfileHeader(data.user);
                 }
 
-                // Renderizar los posts de la página actual
-                renderPosts(data.posts);
+                
+                renderPosts(data.posts.data);
 
                 // Guardar la URL de la siguiente página
                 nextPageUrl = data.posts.next_page_url;

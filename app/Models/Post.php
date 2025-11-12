@@ -34,4 +34,8 @@ class Post extends Model
             get: fn () => Storage::url($this->imagen),
         );
     }
+
+    public function likes(){
+        return $this->belongsToMany(User::class,'likes');
+    }
 }

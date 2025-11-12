@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PostResource;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
@@ -19,10 +20,7 @@ class PostController extends Controller
     public function index()
     {
 
-        $posts = Post::with('user')
-            ->withCount('likes')
-            ->latest()
-            ->paginate(15);
+        $posts = Post::with('user')->withCount('likes')->with('likes')->latest()->paginate(15);
 
 
         return PostResource::collection($posts);
@@ -51,7 +49,13 @@ class PostController extends Controller
     {
         $user->loadCount('posts');
 
-        $posts = $user->posts()->latest()->paginate(12);
+
+        $posts = $user->posts()
+            ->with('user')
+            ->withCount('likes')
+            ->with('likes')
+            ->latest()
+            ->paginate(6);
 
 
         $userData = [
@@ -61,22 +65,24 @@ class PostController extends Controller
             'bio' => $user->bio,
             'posts_count' => $user->posts_count
         ];
-
-
-        $paginatedPosts = PostResource::collection($posts)->resolve();
-
-
+        // Devolver post paginados
         return response()->json([
-            'user' => $userData,
-            'posts' => $paginatedPosts,
-            'debug_app_url' => config('app.url')
-        ]);
+        'user' => $userData,
+        'posts' => [
+            'data' => PostResource::collection($posts),
+            'current_page' => $posts->currentPage(),
+            'last_page' => $posts->lastPage(),
+            'per_page' => $posts->perPage(),
+            'total' => $posts->total(),
+            'next_page_url' => $posts->nextPageUrl(),
+        ]
+    ]);
     }
 
 
     public function show(Post $post)
     {
-
+        $posts = Post::with('user')->withCount('likes')->with('likes')->latest()->paginate(15);
         $post->load(['user', 'comments.user']);
         $post->loadCount(['likes', 'comments']);
 

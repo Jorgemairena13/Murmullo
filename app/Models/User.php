@@ -26,7 +26,7 @@ class User extends Authenticatable
         'password',
     ];
     protected $appends = [
-        'avatar_url', 
+        'avatar_url',
     ];
 
 
@@ -44,5 +44,8 @@ class User extends Authenticatable
         return Attribute::make(
             get: fn() => $this->avatar ? Storage::url($this->avatar) : null,
         );
+    }
+    public function likes(){
+        return $this->belongsToMany(Post::class,'likes');
     }
 }
