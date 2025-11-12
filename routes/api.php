@@ -48,5 +48,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dar me gusta
     Route::post('/posts/{post}/like',[LikeController::class,'store']);
     // Quitar me gusta
-    Route::delete('/posts/{post}/like',[LikeController::class,'delete']);
+    Route::delete('/posts/{post}/like',[LikeController::class,'destroy']);
 });

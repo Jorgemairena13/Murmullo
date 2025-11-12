@@ -9,28 +9,30 @@ use Illuminate\Http\Request;
 class LikeController extends Controller
 {
 
-    public function store(Post $post,Request $request)
+    public function store(Post $post, Request $request)
     {
-        // Guardar like
-        $request->user()->likes()->attach($post->id);
+        $user = $request->user();
+
+        // Revisar si ya existe
+        if (!$user->likes()->where('post_id', $post->id)->exists()) {
+            $user->likes()->attach($post->id);
+        }
+
         return response()->json([
-            'message'=> 'El post tiene un like mas'],201);
+            'message' => 'El post tiene un like más'
+        ], 201);
     }
 
 
 
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Post $post,Request $request)
+    public function destroy(Post $post, Request $request)
     {
         // Borrar el like
-        $request->user()->likes()->attach($post->id);
+        $request->user()->likes()->detach($post->id);
+
 
         return response()->json([
-            'message'=> 'El post tiene un like menos'],200);
-
+            'message' => 'El post tiene un like menos'
+        ], 200);
     }
 }
