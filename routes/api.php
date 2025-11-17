@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\FollowController;
 use Illuminate\Support\Facades\Route;
 
 // Registrar usuario
@@ -35,11 +36,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
 
 
+
     // Dar me gusta
     Route::post('/posts/{post}/like', [LikeController::class, 'store']);
     // Quitar me gusta
     Route::delete('/posts/{post}/like', [LikeController::class, 'destroy']);
-
+    // Crear comentario
     Route::post('/posts/{post}/comment', [CommentController::class,'store']);
+    // Eliminar comentario
     Route::delete('/comment/{id}', [CommentController::class,'destroy']);
+
+    // Seguir usuario sin crear
+    Route::post('/users/{user}/follow',[FollowController::class,'store']);
+    // Dejar de seguir usuario sin crear
+    Route::delete('/users/{user}/follow',[FollowController::class,'destroy']);
+    Route::get('/feed',[]);
 });
