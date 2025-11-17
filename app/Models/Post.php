@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // Importante añadir esto
+use Illuminate\Database\Eloquent\Relations\BelongsTo; 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Comment;
+
 class Post extends Model
 {
     use HasFactory;
@@ -34,8 +36,14 @@ class Post extends Model
             get: fn () => Storage::url($this->imagen),
         );
     }
-
+    // Devuelve los likes de publicacion
     public function likes(){
         return $this->belongsToMany(User::class,'likes');
+    }
+
+    // Devuelve los comentarios de la publicacion
+    public function comentarios(){
+
+        return $this->hasMany(Comment::class);
     }
 }
