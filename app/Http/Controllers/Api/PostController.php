@@ -14,16 +14,22 @@ use App\Http\Requests\UpdatePostRequest;
 
 
 
+
 class PostController extends Controller
 {
     // Feed principal del usuario
-    public function index()
+    public function feed()
     {
 
-        $posts = Post::with('user')->withCount('likes')->with('likes')->latest()->paginate(15);
+        $authenticatedUser = Auth::user();
 
+        $followedUserIds = $authenticatedUser->following()->pluck('id');
+        $posts = Post::whereIn('user_id', $followedUserIds)
+            ->latest()
+            ->with('user')
+            ->paginate(10);
 
-        return PostResource::collection($posts);
+        return response()->json($posts, 200);
     }
 
     // Guarda un post nuevo
@@ -67,16 +73,16 @@ class PostController extends Controller
         ];
         // Devolver post paginados
         return response()->json([
-        'user' => $userData,
-        'posts' => [
-            'data' => PostResource::collection($posts),
-            'current_page' => $posts->currentPage(),
-            'last_page' => $posts->lastPage(),
-            'per_page' => $posts->perPage(),
-            'total' => $posts->total(),
-            'next_page_url' => $posts->nextPageUrl(),
-        ]
-    ]);
+            'user' => $userData,
+            'posts' => [
+                'data' => PostResource::collection($posts),
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total(),
+                'next_page_url' => $posts->nextPageUrl(),
+            ]
+        ]);
     }
 
 
