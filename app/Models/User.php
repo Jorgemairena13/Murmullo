@@ -45,7 +45,28 @@ class User extends Authenticatable
             get: fn() => $this->avatar ? Storage::url($this->avatar) : null,
         );
     }
-    public function likes(){
-        return $this->belongsToMany(Post::class,'likes');
+    public function likes()
+    {
+        return $this->belongsToMany(Post::class, 'likes');
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'seguidor_id',
+            'seguido_id'
+        );
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'seguido_id',
+            'seguidor_id'
+        );
     }
 }

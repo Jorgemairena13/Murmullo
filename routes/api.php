@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Seguir usuario sin crear
     Route::post('/users/{user}/follow',[FollowController::class,'store']);
     // Dejar de seguir usuario sin crear
+    
     Route::delete('/users/{user}/follow',[FollowController::class,'destroy']);
-    Route::get('/feed',[]);
+    Route::get('/feed',[PostController::class,'feed']);
 });
