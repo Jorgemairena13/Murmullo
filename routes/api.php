@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 
-    // Crear editar y rodo
+    // Crear editar y todo
     Route::apiResource('/posts', PostController::class);
     // Ver posts de un usuario concreto
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);

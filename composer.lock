@@ -4,50 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6c96cba327c7e6432dcf09621a2612fd",
+    "content-hash": "7baed37c5e6f21b741f02323c7ede3f6",
     "packages": [
-        {
-            "name": "appwrite/appwrite",
-            "version": "19.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/appwrite/sdk-for-php.git",
-                "reference": "b0a3ffdf7ad2a5e727b9291f939821d965815133"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/appwrite/sdk-for-php/zipball/b0a3ffdf7ad2a5e727b9291f939821d965815133",
-                "reference": "b0a3ffdf7ad2a5e727b9291f939821d965815133",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "php": ">=7.1.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.6.12",
-                "phpunit/phpunit": "^10"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Appwrite\\": "src/Appwrite"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Appwrite is an open-source self-hosted backend server that abstract and simplify complex and repetitive development tasks behind a very simple REST API",
-            "support": {
-                "email": "team@appwrite.io",
-                "issues": "https://github.com/appwrite/sdk-for-php/issues",
-                "source": "https://github.com/appwrite/sdk-for-php/tree/19.0.0",
-                "url": "https://appwrite.io/support"
-            },
-            "time": "2025-12-02T12:54:43+00:00"
-        },
         {
             "name": "brick/math",
             "version": "0.14.0",
