@@ -20,7 +20,7 @@ COPY . .
 
 # 5. Instalar dependencias (Ahora SÍ funcionará porque copiamos Composer arriba)
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --optimize-autoloader
+RUN composer update --no-dev --optimize-autoloader
 
 # 6. Comando de arranque (Migraciones + Servidor)
 # Usamos el formato Shell para que reconozca la variable $PORT de Railway
