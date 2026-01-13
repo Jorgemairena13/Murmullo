@@ -1,0 +1,16 @@
+
+[phases.setup]
+nixPkgs = ["php82", "php82Packages.composer", "libpq"]
+
+
+[phases.build]
+cmds = [
+    "mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache",
+    "composer install --no-dev --optimize-autoloader",
+    "php artisan config:cache",
+    "php artisan route:cache"
+]
+
+
+[start]
+cmd = "php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT"
