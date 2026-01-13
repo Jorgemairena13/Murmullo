@@ -11,6 +11,5 @@ cmds = [
     "php artisan route:cache"
 ]
 
-
 [start]
-cmd = "php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan migrate --force && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT"
