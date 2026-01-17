@@ -30,7 +30,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:usuarios,email',
             'bio' => 'required|string|max:500',
             'is_private' => 'required|boolean',
-            'avatar' => 'required',
+            'avatar' => 'required |image|max:51200',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -42,12 +42,19 @@ class UserController extends Controller
             ];
             return response()->json($data, 400);
         }
+
+        if ($request->hasFile('avatar')) {
+            $rutaAvatar = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            $rutaAvatar = null;
+        }
+
         $usuario =  User::create([
             'nombre' => $request->nombre,
             'email' => $request->email,
             'bio' => $request->bio,
             'is_private' => $request->is_private,
-            'avatar' => $request->avatar,
+            'avatar' => $rutaAvatar,
             'password' => bcrypt($request->password)
         ]);
 

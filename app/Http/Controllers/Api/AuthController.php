@@ -18,7 +18,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:usuarios,email',
             'bio' => 'required|string|max:500',
             'is_private' => 'required|boolean',
-            'avatar' => 'nullable|string|max:255',
+            'avatar' => 'required |image|max:51200',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -30,14 +30,22 @@ class AuthController extends Controller
             ];
             return response()->json($data, 400);
         }
+        if ($request->hasFile('avatar')) {
+            $rutaAvatar = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            $rutaAvatar = null;
+        }
+
         $usuario =  User::create([
             'nombre' => $request->nombre,
             'email' => $request->email,
             'bio' => $request->bio,
-            'is_private' => $request->is_private,
-            'avatar' => $request->avatar,
+            'is_private' =>( bool) $request->is_private,
+            'avatar' => $rutaAvatar,
             'password' => Hash::make($request->password)
         ]);
+
+
 
         if (!$usuario) {
             $data = [

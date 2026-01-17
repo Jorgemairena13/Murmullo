@@ -13,7 +13,9 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Logear usuario
 Route::post('/login', [AuthController::class, 'login']);
-
+Route::get('/info', function () {
+    phpinfo();
+});
 
 // Rutas protegidas  login
 Route::middleware('auth:sanctum')->group(function () {
