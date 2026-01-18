@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
 // Registrar usuario
 Route::post('/register', [AuthController::class, 'register']);
 
@@ -20,6 +20,9 @@ Route::get('/info', function () {
 // Rutas protegidas  login
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
     // Cerrar sesion
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -44,14 +47,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // Quitar me gusta
     Route::delete('/posts/{post}/like', [LikeController::class, 'destroy']);
     // Crear comentario
-    Route::post('/posts/{post}/comment', [CommentController::class,'store']);
+    Route::post('/posts/{post}/comment', [CommentController::class, 'store']);
     // Eliminar comentario
-    Route::delete('/comment/{id}', [CommentController::class,'destroy']);
+    Route::delete('/comment/{id}', [CommentController::class, 'destroy']);
 
     // Seguir usuario sin crear
-    Route::post('/users/{user}/follow',[FollowController::class,'store']);
+    Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     // Dejar de seguir usuario sin crear
 
-    Route::delete('/users/{user}/follow',[FollowController::class,'destroy']);
-    Route::get('/feed',[PostController::class,'feed']);
+    Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
+    Route::get('/feed', [PostController::class, 'feed']);
 });

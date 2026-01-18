@@ -130,6 +130,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message'=> 'Login correcto',
+            'user'=>$user,
             'token'=> $token,
             'status'=> 200
         ],200);
