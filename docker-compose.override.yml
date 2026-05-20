@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: murmullo-app-dev
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=murmullo
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootpassword
+      - REDIS_HOST=redis
+      - MEMCACHED_HOST=memcached
+      - CACHE_STORE=redis
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      sh -c "
+        cp /var/www/html/.env.docker /var/www/html/.env 2>/dev/null || true &&
+        php artisan key:generate 2>/dev/null || true &&
+        php artisan migrate --force 2>/dev/null || true &&
+        composer install &&
+        npm install &&
+        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+      "
+
+  mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+
+  vite:
+    image: node:20-alpine
+    container_name: murmullo-vite
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    command: npm run dev
+    ports:
+      - "5173:5173"
+    depends_on:
+      - app
