@@ -40,8 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ver posts de un usuario concreto
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
 
-
-
     // Dar me gusta
     Route::post('/posts/{post}/like', [LikeController::class, 'store']);
     // Quitar me gusta

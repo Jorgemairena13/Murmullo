@@ -77,7 +77,7 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        $usuario = User::find($id);
+        $usuario = User::withCount(['posts', 'followers', 'following'])->find($id);
         if (!$usuario) {
             $data = [
                 'mesage' => 'Usuario no encontrado',
