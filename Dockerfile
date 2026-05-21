@@ -38,7 +38,8 @@ RUN npm ci && npm run build
 
 RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
     && mkdir -p /var/www/html/storage/logs \
-    && chmod -R 775 /var/www/html/storage \
+    && touch /var/www/html/database/database.sqlite \
+    && chmod -R 775 /var/www/html/storage /var/www/html/database/database.sqlite \
     && chown -R www-data:www-data /var/www/html
 
 RUN php artisan config:cache \
@@ -50,4 +51,4 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
 
-CMD php artisan migrate --force --isolated && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
