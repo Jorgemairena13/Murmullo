@@ -16,9 +16,9 @@ class AuthController extends Controller
         $validar_datos = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
             'email' => 'required|email|unique:usuarios,email',
-            'bio' => 'required|string|max:500',
-            'is_private' => 'required|boolean',
-            'avatar' => 'required |image|max:51200',
+            'bio' => 'nullable|string|max:500',
+            'is_private' => 'nullable|boolean',
+            'avatar' => 'nullable|image|max:51200',
             'password' => 'required|string|min:6|confirmed',
         ]);
 

@@ -43,7 +43,6 @@ RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
 
 RUN php artisan config:cache \
     && php artisan route:cache \
-    && php artisan view:cache \
     && php artisan event:cache
 
 COPY nginx.conf /etc/nginx/nginx.conf
