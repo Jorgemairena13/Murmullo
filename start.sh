@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-
+php artisan storage:link --force 2>/dev/null || true
 echo "==> DB_HOST: $DB_HOST"
 echo "==> DB_DATABASE: $DB_DATABASE"
 echo "==> Limpiando cache anterior..."

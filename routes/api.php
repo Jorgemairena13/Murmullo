@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 // Registrar usuario
@@ -26,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Cerrar sesion
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::post('/upload', [UploadController::class, 'upload']);
 
     // Ver un perfil
     Route::get('/users/{id}', [UserController::class, 'show']);
