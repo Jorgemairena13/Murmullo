@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [UploadController::class, 'upload']);
 
     // Ver un perfil
+    Route::get('/search', [UserController::class, 'search']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     // Actualizar perfil
     Route::put('/users/{id}', [UserController::class, 'update']);

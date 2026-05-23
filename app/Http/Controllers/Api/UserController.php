@@ -215,6 +215,36 @@ class UserController extends Controller
         return response()->json($data,200);
     }
 
+    public function search(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string|min:1',
+        ]);
+
+        $query = $request->query('query');
+
+        $users = User::where(function ($q) use ($query) {
+                $q->where('nombre', 'like', "%{$query}%")
+                  ->orWhere('username', 'like', "%{$query}%");
+            })
+            ->where('id', '!=', auth()->id())
+            ->withExists(['followers as is_following' => function ($q) {
+                $q->where('seguidor_id', auth()->id());
+            }])
+            ->withCount(['posts', 'followers', 'following'])
+            ->paginate(15);
+
+        return response()->json([
+            'users' => $users->items(),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ],
+        ], 200);
+    }
+
     public function follow($id) {}
 
     public function unFollow($id) {}
