@@ -28,7 +28,7 @@ class PostController extends Controller
 
         $posts = Post::whereIn('user_id', $ids)
             ->with('user')
-            ->withCount(['likes', 'comments'])
+            ->withCount(['likes', 'comentarios'])
             ->with('likes')
             ->latest()
             ->paginate(10);
