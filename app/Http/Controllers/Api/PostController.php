@@ -20,16 +20,30 @@ class PostController extends Controller
     // Feed principal del usuario
     public function feed()
     {
+        $user = Auth::user();
 
-        $authenticatedUser = Auth::user();
+        $followedUserIds = $user->following()->pluck('usuarios.id');
 
-        $followedUserIds = $authenticatedUser->following()->pluck('id');
-        $posts = Post::whereIn('user_id', $followedUserIds)
-            ->latest()
+        $ids = $followedUserIds->push($user->id);
+
+        $posts = Post::whereIn('user_id', $ids)
             ->with('user')
+            ->withCount(['likes', 'comments'])
+            ->with('likes')
+            ->latest()
             ->paginate(10);
 
-        return response()->json($posts, 200);
+        return response()->json([
+            'data' => PostResource::collection($posts),
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total(),
+                'next_page_url' => $posts->nextPageUrl(),
+                'prev_page_url' => $posts->previousPageUrl(),
+            ]
+        ], 200);
     }
 
     // Guarda un post nuevo
