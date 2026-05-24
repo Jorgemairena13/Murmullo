@@ -1,11 +1,18 @@
 #!/bin/bash
 set -e
+
+echo "==> Arreglando permisos..."
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
 php artisan storage:link --force 2>/dev/null || true
+
 echo "==> DB_HOST: $DB_HOST"
 echo "==> DB_DATABASE: $DB_DATABASE"
+
 echo "==> Limpiando cache anterior..."
-php artisan config:clear
-php artisan cache:clear
+php artisan config:clear || true
+php artisan cache:clear || true
 
 echo "==> Cacheando configuración..."
 php artisan config:cache
