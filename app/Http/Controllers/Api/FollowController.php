@@ -17,8 +17,7 @@ class FollowController extends Controller
         if (auth()->id() === $user->id) {
             return response()->json(['message' => 'No puedes seguirte a ti mismo'], 403);
         }
-        auth()->user()->following()->attach([$user->id]);
-        // Seguri a usuario
+        auth()->user()->following()->syncWithoutDetaching([$user->id]);
         return response()->json([
             'message' => 'Siguiendo a ' . $user->nombre
         ], 200);
