@@ -10,12 +10,21 @@ return new class extends Migration
     public function up(): void
     {
         DB::statement('
-            DELETE f1 FROM follows f1
-            INNER JOIN follows f2
-            WHERE f1.seguidor_id = f2.seguidor_id
-              AND f1.seguido_id = f2.seguido_id
-              AND f1.created_at > f2.created_at
+            CREATE TABLE follows_temp AS
+            SELECT MIN(created_at) as created_at, MIN(updated_at) as updated_at,
+                   seguidor_id, seguido_id
+            FROM follows
+            GROUP BY seguidor_id, seguido_id
         ');
+
+        DB::statement('TRUNCATE TABLE follows');
+
+        DB::statement('
+            INSERT INTO follows (seguidor_id, seguido_id, created_at, updated_at)
+            SELECT seguidor_id, seguido_id, created_at, updated_at FROM follows_temp
+        ');
+
+        DB::statement('DROP TABLE follows_temp');
 
         Schema::table('follows', function (Blueprint $table) {
             $table->unique(['seguidor_id', 'seguido_id'], 'unique_follow');
