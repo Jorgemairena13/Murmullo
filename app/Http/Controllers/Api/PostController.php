@@ -48,23 +48,28 @@ class PostController extends Controller
 
     // Guarda un post nuevo
     public function store(StorePostRequest $request)
-    {
-
-        $imagePath = Cloudinary::upload($request->file('imagen')->getRealPath(), [
-            'folder' => 'murmullo/posts'
-        ])->getSecurePath();
-
+{
+    try {
+        $imagePath = Cloudinary::upload(
+            $request->file('imagen')->getRealPath(),
+            ['folder' => 'murmullo/posts']
+        )->getSecurePath();
 
         $post = $request->user()->posts()->create([
             'texto' => $request->validated('texto'),
             'imagen' => $imagePath
         ]);
 
-
         return (new PostResource($post))
             ->response()
             ->setStatusCode(201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     // Mostrar post de usuario
     public function getUserPosts(User $user)
