@@ -9,32 +9,30 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement('
-            CREATE TABLE follows_temp AS
-            SELECT MIN(created_at) as created_at, MIN(updated_at) as updated_at,
-                   seguidor_id, seguido_id
-            FROM follows
-            GROUP BY seguidor_id, seguido_id
-        ');
+        Schema::dropIfExists('follows');
 
-        DB::statement('TRUNCATE TABLE follows');
+        Schema::create('follows', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('seguidor_id');
+            $table->unsignedBigInteger('seguido_id');
+            $table->timestamps();
 
-        DB::statement('
-            INSERT INTO follows (seguidor_id, seguido_id, created_at, updated_at)
-            SELECT seguidor_id, seguido_id, created_at, updated_at FROM follows_temp
-        ');
+            $table->foreign('seguidor_id')
+                  ->references('id')
+                  ->on('usuarios')
+                  ->onDelete('cascade');
 
-        DB::statement('DROP TABLE follows_temp');
+            $table->foreign('seguido_id')
+                  ->references('id')
+                  ->on('usuarios')
+                  ->onDelete('cascade');
 
-        Schema::table('follows', function (Blueprint $table) {
             $table->unique(['seguidor_id', 'seguido_id'], 'unique_follow');
         });
     }
 
     public function down(): void
     {
-        Schema::table('follows', function (Blueprint $table) {
-            $table->dropUnique('unique_follow');
-        });
+        Schema::dropIfExists('follows');
     }
 };
