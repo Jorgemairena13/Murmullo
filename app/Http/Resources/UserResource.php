@@ -14,7 +14,9 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
-            'avatar_url' => $this->avatar ? config('app.url') . Storage::url($this->avatar) : null,
+            'avatar_url' => $this->avatar
+                ? config('app.url') . '/storage/' . $this->avatar
+                : null,
         ];
     }
 }

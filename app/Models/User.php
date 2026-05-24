@@ -43,7 +43,9 @@ class User extends Authenticatable
     protected function avatarUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->avatar ? config('app.url') . Storage::url($this->avatar) : null,
+            get: fn() => $this->avatar
+                ? config('app.url') . '/storage/' . $this->avatar
+                : null,
         );
     }
     public function likes()

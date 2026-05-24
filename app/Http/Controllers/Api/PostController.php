@@ -81,7 +81,9 @@ class PostController extends Controller
         $userData = [
             'id' => $user->id,
             'nombre' => $user->nombre,
-            'avatar_url' => $user->avatar ? config('app.url') . Storage::url($user->avatar) : null,
+            'avatar_url' => $user->avatar
+                ? config('app.url') . '/storage/' . $user->avatar
+                : null,
             'bio' => $user->bio,
             'posts_count' => $user->posts_count
         ];
