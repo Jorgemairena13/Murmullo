@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AuthController extends Controller
 {
@@ -31,7 +32,9 @@ class AuthController extends Controller
             return response()->json($data, 400);
         }
         if ($request->hasFile('avatar')) {
-            $rutaAvatar = $request->file('avatar')->store('avatars', 'public');
+            $rutaAvatar = Cloudinary::upload($request->file('avatar')->getRealPath(), [
+                'folder' => 'murmullo/avatars'
+            ])->getSecurePath();
         } else {
             $rutaAvatar = null;
         }

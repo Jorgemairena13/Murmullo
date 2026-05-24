@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage; 
 
 class UserResource extends JsonResource
 {
@@ -14,9 +13,7 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
-            'avatar_url' => $this->avatar
-                ? config('app.url') . '/storage/' . $this->avatar
-                : null,
+            'avatar_url' => $this->avatar ?? null,
         ];
     }
 }

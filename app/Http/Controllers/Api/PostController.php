@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PostResource;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
 
@@ -50,7 +50,9 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
 
-        $imagePath = $request->file('imagen')->store('posts', 'public');
+        $imagePath = Cloudinary::upload($request->file('imagen')->getRealPath(), [
+            'folder' => 'murmullo/posts'
+        ])->getSecurePath();
 
 
         $post = $request->user()->posts()->create([
@@ -81,9 +83,7 @@ class PostController extends Controller
         $userData = [
             'id' => $user->id,
             'nombre' => $user->nombre,
-            'avatar_url' => $user->avatar
-                ? config('app.url') . '/storage/' . $user->avatar
-                : null,
+            'avatar_url' => $user->avatar ?? null,
             'bio' => $user->bio,
             'posts_count' => $user->posts_count
         ];
@@ -104,9 +104,8 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        $posts = Post::with('user')->withCount('likes')->with('likes')->latest()->paginate(15);
-        $post->load(['user', 'comments.user']);
-        $post->loadCount(['likes', 'comments']);
+        $post->load(['user', 'comentarios.user']);
+        $post->loadCount(['likes', 'comentarios']);
 
         return new PostResource($post);
     }
@@ -134,8 +133,14 @@ class PostController extends Controller
         // Ver si esta autorizado
         $this->authorize('delete', $post);
 
-        // Borrar imagen
-        Storage::disk('public')->delete($post->imagen);
+        // Borrar imagen de Cloudinary
+        if ($post->imagen) {
+            $publicId = preg_replace(
+                '#\.[a-z]+$#', '',
+                preg_replace('#^.+/(?:v\d+/)?#', '', parse_url($post->imagen, PHP_URL_PATH))
+            );
+            Cloudinary::destroy($publicId);
+        }
 
         // Borrar de la base de datos
         $post->delete();
