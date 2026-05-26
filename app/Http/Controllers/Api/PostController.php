@@ -49,10 +49,10 @@ class PostController extends Controller
     // Guarda un post nuevo
     public function store(StorePostRequest $request)
     {
-        $imagePath = Cloudinary::upload(
+        $imagePath = Cloudinary::uploadApi()->upload(
             $request->file('imagen')->getPathname(),
             ['folder' => 'murmullo/posts']
-        )->getSecurePath();
+        )['secure_url'];
 
         $post = $request->user()->posts()->create([
             'texto' => $request->validated('texto'),
@@ -137,7 +137,7 @@ class PostController extends Controller
                 '#\.[a-z]+$#', '',
                 preg_replace('#^.+/(?:v\d+/)?#', '', parse_url($post->imagen, PHP_URL_PATH))
             );
-            Cloudinary::destroy($publicId);
+            Cloudinary::uploadApi()->destroy($publicId);
         }
 
         // Borrar de la base de datos

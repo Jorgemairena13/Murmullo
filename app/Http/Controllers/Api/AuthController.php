@@ -32,9 +32,10 @@ class AuthController extends Controller
             return response()->json($data, 400);
         }
         if ($request->hasFile('avatar')) {
-            $rutaAvatar = Cloudinary::upload($request->file('avatar')->getPathname(), [
-                'folder' => 'murmullo/avatars'
-            ])->getSecurePath();
+            $rutaAvatar = Cloudinary::uploadApi()->upload(
+                $request->file('avatar')->getPathname(),
+                ['folder' => 'murmullo/avatars']
+            )['secure_url'];
         } else {
             $rutaAvatar = null;
         }
