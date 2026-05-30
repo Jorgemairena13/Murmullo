@@ -12,6 +12,17 @@ use Dom\Comment as DomComment;
 
 class CommentController extends Controller
 {
+    // Listar comentarios de un post
+    public function index(Post $post)
+    {
+        $comentarios = $post->comentarios()
+            ->with('user')
+            ->latest()
+            ->get();
+
+        return response()->json(['data' => $comentarios], 200);
+    }
+
     // Guardar comentario
     public function store(Request $request,Post $post){
         $request->validate([

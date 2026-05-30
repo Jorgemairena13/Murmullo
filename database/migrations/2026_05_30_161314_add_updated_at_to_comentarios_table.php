@@ -11,18 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('comentarios', function (Blueprint $table) {
-            $table->timestamps();
-        });
+        if (! Schema::hasColumn('comentarios', 'updated_at')) {
+            Schema::table('comentarios', function (Blueprint $table) {
+                $table->timestamp('updated_at')->nullable();
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('comentarios', function (Blueprint $table) {
-            $table->dropColumn(['created_at', 'updated_at']);
-        });
+        if (Schema::hasColumn('comentarios', 'updated_at')) {
+            Schema::table('comentarios', function (Blueprint $table) {
+                $table->dropColumn('updated_at');
+            });
+        }
     }
 };
