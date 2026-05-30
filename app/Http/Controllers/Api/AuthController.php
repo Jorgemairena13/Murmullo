@@ -16,7 +16,7 @@ class AuthController extends Controller
     {
         $validar_datos = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:usuarios,username',
             'email' => 'required|email|unique:usuarios,email',
             'bio' => 'nullable|string|max:500',
             'is_private' => 'nullable|boolean',
@@ -165,6 +165,7 @@ class AuthController extends Controller
 
         $validar_datos = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:usuarios,username,' . $user->id,
             'email' => 'required|email|unique:usuarios,email,' . $user->id,
             'bio' => 'required|string|max:500',
             'is_private' => 'required|boolean',
@@ -181,6 +182,7 @@ class AuthController extends Controller
         }
 
         $user->nombre = $request->nombre;
+        $user->username = $request->username;
         $user->email = $request->email;
         $user->bio = $request->bio;
         $user->is_private = $request->is_private;

@@ -6,6 +6,7 @@ use Laravel\Sanctum\Sanctum;
 test('usuario puede registrarse', function () {
     $response = $this->postJson('/api/register', [
         'nombre' => 'Test User',
+        'username' => 'testuser',
         'email' => 'test@example.com',
         'password' => '123456',
         'password_confirmation' => '123456',
