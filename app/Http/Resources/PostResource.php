@@ -21,10 +21,7 @@ class PostResource extends JsonResource
             'likes_count' => $this->whenCounted('likes'),
             'comments_count' => $this->whenCounted('comentarios'),
 
-            'is_liked' =>$this->when(Auth::check(), function(){
-                return $this->likes->contains(Auth::id());
-            }
-            ),
+            'is_liked' => $this->when(Auth::check(), fn() => $this->likes_exists ?? false),
 
 
         ];

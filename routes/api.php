@@ -55,4 +55,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
     Route::get('/feed', [PostController::class, 'feed']);
+    Route::get('/explorar', [PostController::class, 'explorar']);
 });

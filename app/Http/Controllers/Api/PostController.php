@@ -29,9 +29,32 @@ class PostController extends Controller
         $posts = Post::whereIn('user_id', $ids)
             ->with('user')
             ->withCount(['likes', 'comentarios'])
-            ->with('likes')
+            ->withExists(['likes' => fn($q) => $q->where('user_id', auth()->id())])
             ->latest()
             ->paginate(10);
+
+        return response()->json([
+            'data' => PostResource::collection($posts),
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total(),
+                'next_page_url' => $posts->nextPageUrl(),
+                'prev_page_url' => $posts->previousPageUrl(),
+            ]
+        ], 200);
+    }
+
+    // Explorar posts de cuentas públicas
+    public function explorar()
+    {
+        $posts = Post::whereHas('user', fn($q) => $q->where('is_private', false))
+            ->with('user')
+            ->withCount(['likes', 'comentarios'])
+            ->withExists(['likes' => fn($q) => $q->where('user_id', auth()->id())])
+            ->latest()
+            ->paginate(20);
 
         return response()->json([
             'data' => PostResource::collection($posts),
@@ -97,7 +120,7 @@ class PostController extends Controller
         $posts = $user->posts()
             ->with('user')
             ->withCount('likes')
-            ->with('likes')
+            ->withExists(['likes' => fn($q) => $q->where('user_id', auth()->id())])
             ->latest()
             ->paginate(6);
 
