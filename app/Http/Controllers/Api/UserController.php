@@ -24,19 +24,37 @@ class UserController extends Controller
     public function show(string $id)
     {
         $usuario = User::withCount(['posts', 'followers', 'following'])->find($id);
+
         if (!$usuario) {
-            $data = [
-                'mesage' => 'Usuario no encontrado',
+            return response()->json([
+                'message' => 'Usuario no encontrado',
                 'status' => 404
-            ];
-            return response()->json($data, 404);
+            ], 404);
         }
 
-        $data = [
+        if ($usuario->is_private && auth()->check()) {
+            $isFollowing = $usuario->followers()
+                ->where('seguidor_id', auth()->id())
+                ->exists();
+
+            if (! $isFollowing) {
+                return response()->json([
+                    'usuario' => [
+                        'id' => $usuario->id,
+                        'nombre' => $usuario->nombre,
+                        'avatar' => $usuario->avatar && str_starts_with($usuario->avatar, 'http') ? $usuario->avatar : null,
+                        'bio' => $usuario->bio,
+                        'is_private' => true,
+                    ],
+                    'status' => 200
+                ], 200);
+            }
+        }
+
+        return response()->json([
             'usuario' => $usuario,
             'status' => 200
-        ];
-        return response()->json($data, 200);
+        ], 200);
     }
 
     public function search(Request $request)

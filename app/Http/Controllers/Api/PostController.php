@@ -69,6 +69,30 @@ class PostController extends Controller
     {
         $user->loadCount('posts');
 
+        if ($user->is_private && auth()->check()) {
+            $isFollowing = $user->followers()
+                ->where('seguidor_id', auth()->id())
+                ->exists();
+
+            if (! $isFollowing) {
+                return response()->json([
+                    'user' => [
+                        'id' => $user->id,
+                        'nombre' => $user->nombre,
+                        'avatar_url' => $user->avatar && str_starts_with($user->avatar, 'http') ? $user->avatar : null,
+                        'bio' => $user->bio,
+                        'is_private' => true,
+                    ],
+                    'posts' => [
+                        'data' => [],
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => 6,
+                        'total' => 0,
+                    ]
+                ]);
+            }
+        }
 
         $posts = $user->posts()
             ->with('user')
@@ -76,7 +100,6 @@ class PostController extends Controller
             ->with('likes')
             ->latest()
             ->paginate(6);
-
 
         $userData = [
             'id' => $user->id,
