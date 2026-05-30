@@ -16,6 +16,7 @@ class AuthController extends Controller
     {
         $validar_datos = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
             'email' => 'required|email|unique:usuarios,email',
             'bio' => 'nullable|string|max:500',
             'is_private' => 'nullable|boolean',
@@ -43,14 +44,12 @@ class AuthController extends Controller
         $usuario =  User::create([
             'nombre' => $request->nombre,
             'email' => $request->email,
+            'username' => $request->username,
             'bio' => $request->bio,
             'is_private' =>( bool) $request->is_private,
             'avatar' => $rutaAvatar,
             'password' => Hash::make($request->password)
         ]);
-
-
-
         if (!$usuario) {
             $data = [
                 'message' => 'Error al crear el usuario',
@@ -75,7 +74,6 @@ class AuthController extends Controller
             'status' => 201
         ], 201);
     }
-
     // Funcion de login
     public function login(Request $request)
     {
@@ -83,7 +81,6 @@ class AuthController extends Controller
             'email'    => 'required|email|',
             'password' => 'required|string|min:6'
         ]);
-
         if ($validar_datos->fails()) {
             $data = [
                 'message' => 'Error en la validacion de datos',
@@ -119,7 +116,6 @@ class AuthController extends Controller
             return response()->json($data, 400);
         }
         $passwordVerify = Hash::check($password,$userPassword);
-
         if(!$passwordVerify){
             $data = [
                 'message'=>'Error en la validacion',
@@ -128,10 +124,7 @@ class AuthController extends Controller
             ];
             return response()->json($data, 400);
         }
-
-
         $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
             'message'=> 'Login correcto',
             'user'=>$user,
@@ -203,9 +196,7 @@ class AuthController extends Controller
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
-
         $user->save();
-
         return response()->json([
             'message' => 'Usuario actualizado correctamente',
             'users' => $user,
@@ -216,13 +207,10 @@ class AuthController extends Controller
     public function destroyAccount(Request $request, string $id)
     {
         $user = $request->user();
-
         if ((int) $id !== $user->id) {
             return response()->json(['message' => 'No autorizado', 'status' => 403], 403);
         }
-
         $user->delete();
-
         return response()->json([
             'message' => 'Usuario eliminado',
             'status' => 200
