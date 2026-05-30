@@ -152,10 +152,80 @@ class AuthController extends Controller
         ]);
     }
 
-    public function getUser()
+    public function profile(Request $request)
     {
+        $usuario = $request->user()->loadCount(['posts', 'followers', 'following']);
+
         return response()->json([
-            'message' => '<h1>Usuario devuelto correctamente</h1>'
+            'usuario' => $usuario,
+            'status' => 200
+        ], 200);
+    }
+
+    public function updateProfile(Request $request, string $id)
+    {
+        $user = $request->user();
+
+        if ((int) $id !== $user->id) {
+            return response()->json(['message' => 'No autorizado', 'status' => 403], 403);
+        }
+
+        $validar_datos = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:usuarios,email,' . $user->id,
+            'bio' => 'required|string|max:500',
+            'is_private' => 'required|boolean',
+            'avatar' => 'nullable|image|max:51200',
+            'password' => 'nullable|string|min:6|confirmed',
         ]);
+
+        if ($validar_datos->fails()) {
+            return response()->json([
+                'message' => 'Error en la validacion de datos',
+                'errors' => $validar_datos->errors(),
+                'status' => 400
+            ], 400);
+        }
+
+        $user->nombre = $request->nombre;
+        $user->email = $request->email;
+        $user->bio = $request->bio;
+        $user->is_private = $request->is_private;
+
+        if ($request->hasFile('avatar')) {
+            $rutaAvatar = Cloudinary::uploadApi()->upload(
+                $request->file('avatar')->getPathname(),
+                ['folder' => 'murmullo/avatars']
+            )['secure_url'];
+            $user->avatar = $rutaAvatar;
+        }
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Usuario actualizado correctamente',
+            'users' => $user,
+            'status' => 200
+        ], 200);
+    }
+
+    public function destroyAccount(Request $request, string $id)
+    {
+        $user = $request->user();
+
+        if ((int) $id !== $user->id) {
+            return response()->json(['message' => 'No autorizado', 'status' => 403], 403);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Usuario eliminado',
+            'status' => 200
+        ], 200);
     }
 }

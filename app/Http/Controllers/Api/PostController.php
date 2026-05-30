@@ -81,7 +81,7 @@ class PostController extends Controller
         $userData = [
             'id' => $user->id,
             'nombre' => $user->nombre,
-            'avatar_url' => $user->avatar ?? null,
+            'avatar_url' => $user->avatar && str_starts_with($user->avatar, 'http') ? $user->avatar : null,
             'bio' => $user->bio,
             'posts_count' => $user->posts_count
         ];

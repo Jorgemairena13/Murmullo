@@ -13,8 +13,7 @@ class PostResource extends JsonResource
         return [
             'id' => $this->id,
             'texto' => $this->texto,
-            // Covertir url
-            'imagen_url' => $this->imagen ?? null,
+            'imagen_url' => $this->imagen && str_starts_with($this->imagen, 'http') ? $this->imagen : null,
             'created_at' => $this->created_at->diffForHumans(),
             'user' => new UserResource($this->whenLoaded('user')),
 

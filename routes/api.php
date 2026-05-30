@@ -8,7 +8,6 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 // Registrar usuario
 Route::post('/register', [AuthController::class, 'register']);
 
@@ -21,9 +20,7 @@ Route::get('/info', function () {
 // Rutas protegidas  login
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/user', [AuthController::class, 'profile']);
     // Cerrar sesion
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -33,9 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/search', [UserController::class, 'search']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     // Actualizar perfil
-    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::put('/users/{id}', [AuthController::class, 'updateProfile']);
     // Borrar cuenta
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::delete('/users/{id}', [AuthController::class, 'destroyAccount']);
 
 
     // Crear editar y todo
