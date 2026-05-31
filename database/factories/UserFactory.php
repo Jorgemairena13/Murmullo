@@ -6,29 +6,29 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    private static array $nombres = [
+        'Ana García', 'Carlos López', 'María Rodríguez', 'Pedro Sánchez',
+        'Laura Martínez', 'David Fernández', 'Sara Torres', 'Miguel Ruiz',
+        'Elena Gómez', 'Javier Morales',
+    ];
+
+    private static int $index = 0;
+
     public function definition(): array
     {
-        $username = fake()->unique()->userName();
+        $nombre = self::$nombres[self::$index % count(self::$nombres)];
+        $username = Str::slug($nombre) . self::$index;
+        self::$index++;
+
         return [
-            'nombre' => fake()->name(),
+            'nombre' => $nombre,
             'username' => $username,
-            'email' => fake()->unique()->safeEmail(),
-            'bio' => fake()->sentence(rand(3, 6)),
+            'email' => $username . '@example.com',
+            'bio' => 'Bio de ' . $nombre,
             'is_private' => false,
             'avatar' => "https://i.pravatar.cc/200?u={$username}",
             'email_verified_at' => now(),
@@ -37,9 +37,6 @@ class UserFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [
