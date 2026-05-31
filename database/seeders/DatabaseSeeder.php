@@ -7,24 +7,23 @@ use App\Models\Post;
 use App\Models\Comment;
 use App\Models\Like;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        if (User::count() > 0) {
-            $this->command->info('Ya hay datos en la BD, se salta el seed');
-            return;
-        }
-
-        $me = User::factory()->create([
-            'nombre' => 'Jorge Mairena',
-            'username' => 'jorgemairena',
-            'email' => 'jorgemairena13@gmail.com',
-            'bio' => 'Creador de Murmullo',
-            'avatar' => 'https://i.pravatar.cc/200?u=jorgemairena',
-            'password' => bcrypt('Mairena13'),
-        ]);
+        $me = User::updateOrCreate(
+            ['email' => 'jorgemairena13@gmail.com'],
+            [
+                'nombre' => 'Jorge Mairena',
+                'username' => 'jorgemairena',
+                'bio' => 'Creador de Murmullo',
+                'is_private' => false,
+                'avatar' => 'https://i.pravatar.cc/200?u=jorgemairena',
+                'password' => bcrypt('Mairena13'),
+            ]
+        );
 
         $usersData = [
             ['nombre' => 'Ana García', 'username' => 'anagarcia', 'bio' => 'Fotógrafa y viajera. Capturando el mundo un click a la vez.'],
@@ -46,10 +45,30 @@ class DatabaseSeeder extends Seeder
         $users = collect([$me]);
 
         foreach ($usersData as $data) {
-            $users->push(User::factory()->create($data));
+            $email = $data['username'] . '@murmullo.app';
+            $user = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'nombre' => $data['nombre'],
+                    'username' => $data['username'],
+                    'email' => $email,
+                    'bio' => $data['bio'],
+                    'is_private' => false,
+                    'avatar' => 'https://i.pravatar.cc/200?u=' . $data['username'],
+                    'password' => bcrypt('password'),
+                ]
+            );
+            $users->push($user);
         }
 
-        $this->command->info('Creados ' . $users->count() . ' usuarios');
+        $this->command->info('Creados/actualizados ' . $users->count() . ' usuarios');
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Comment::truncate();
+        Like::truncate();
+        Post::truncate();
+        DB::table('follows')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         foreach ($users as $user) {
             $posts = Post::factory(rand(3, 6))->create([
@@ -78,7 +97,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $this->command->info('Posts, likes y comentarios creados');
+        $this->command->info('Posts, likes y comentarios regenerados');
 
         foreach ($users as $user) {
             $usersToFollow = $users
@@ -91,7 +110,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $this->command->info('Relaciones de follow creadas');
+        $this->command->info('Relaciones de follow recreadas');
         $this->command->info("✅ Base de datos sembrada correctamente con usuario 'jorgemairena13@gmail.com'");
     }
 }
