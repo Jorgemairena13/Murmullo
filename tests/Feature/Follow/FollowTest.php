@@ -19,9 +19,9 @@ test('no autenticado no puede dejar de seguir', function () {
     $response->assertStatus(401);
 });
 
-test('usuario puede seguir a otro usuario', function () {
+test('usuario puede seguir a usuario publico', function () {
     $follower = User::factory()->create();
-    $target = User::factory()->create();
+    $target = User::factory()->create(['is_private' => false]);
 
     Sanctum::actingAs($follower);
 
@@ -85,9 +85,9 @@ test('usuario no puede dejar de seguirse a si mismo', function () {
         ]);
 });
 
-test('seguir dos veces es idempotente', function () {
+test('seguir a usuario publico dos veces es idempotente', function () {
     $follower = User::factory()->create();
-    $target = User::factory()->create();
+    $target = User::factory()->create(['is_private' => false]);
 
     Sanctum::actingAs($follower);
 
@@ -96,6 +96,66 @@ test('seguir dos veces es idempotente', function () {
 
     $this->assertDatabaseCount('follows', 1);
     $this->assertDatabaseHas('follows', [
+        'seguidor_id' => $follower->id,
+        'seguido_id' => $target->id,
+    ]);
+});
+
+test('seguir a usuario privado crea solicitud', function () {
+    $follower = User::factory()->create();
+    $target = User::factory()->create(['is_private' => true]);
+
+    Sanctum::actingAs($follower);
+
+    $response = $this->postJson("/api/users/{$target->id}/follow");
+
+    $response->assertStatus(201)
+        ->assertJson([
+            'message' => 'Solicitud enviada a ' . $target->nombre,
+        ]);
+
+    $this->assertDatabaseHas('follow_requests', [
+        'seguidor_id' => $follower->id,
+        'seguido_id' => $target->id,
+    ]);
+
+    $this->assertDatabaseMissing('follows', [
+        'seguidor_id' => $follower->id,
+        'seguido_id' => $target->id,
+    ]);
+});
+
+test('seguir a usuario privado dos veces es idempotente', function () {
+    $follower = User::factory()->create();
+    $target = User::factory()->create(['is_private' => true]);
+
+    Sanctum::actingAs($follower);
+
+    $this->postJson("/api/users/{$target->id}/follow")->assertStatus(201);
+    $this->postJson("/api/users/{$target->id}/follow")->assertStatus(200)
+        ->assertJson([
+            'message' => 'Ya enviaste una solicitud a ' . $target->nombre,
+        ]);
+
+    $this->assertDatabaseCount('follow_requests', 1);
+});
+
+test('dejar de seguir elimina tambien solicitud pendiente', function () {
+    $follower = User::factory()->create();
+    $target = User::factory()->create(['is_private' => true]);
+
+    \App\Models\FollowRequest::create([
+        'seguidor_id' => $follower->id,
+        'seguido_id' => $target->id,
+    ]);
+
+    Sanctum::actingAs($follower);
+
+    $response = $this->deleteJson("/api/users/{$target->id}/follow");
+
+    $response->assertStatus(200);
+
+    $this->assertDatabaseMissing('follow_requests', [
         'seguidor_id' => $follower->id,
         'seguido_id' => $target->id,
     ]);

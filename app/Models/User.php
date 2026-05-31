@@ -68,4 +68,21 @@ class User extends Authenticatable
             'seguidor_id'
         );
     }
+
+    public function followRequestsSent()
+    {
+        return $this->hasMany(FollowRequest::class, 'seguidor_id');
+    }
+
+    public function followRequestsReceived()
+    {
+        return $this->hasMany(FollowRequest::class, 'seguido_id');
+    }
+
+    public function hasPendingFollowRequestFrom(User $user): bool
+    {
+        return $this->followRequestsReceived()
+            ->where('seguidor_id', $user->id)
+            ->exists();
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\FollowRequestController;
 use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 // Registrar usuario
@@ -50,11 +51,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // Eliminar comentario
     Route::delete('/comment/{id}', [CommentController::class, 'destroy']);
 
-    // Seguir usuario sin crear
+    // Seguir / dejar de seguir
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);
-    // Dejar de seguir usuario sin crear
-
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
+
+    // Solicitudes de seguimiento (follow requests)
+    Route::get('/follow-requests', [FollowRequestController::class, 'index']);
+    Route::post('/follow-requests/{followRequest}/accept', [FollowRequestController::class, 'accept']);
+    Route::delete('/follow-requests/{followRequest}/reject', [FollowRequestController::class, 'reject']);
     Route::get('/feed', [PostController::class, 'feed']);
     Route::get('/explorar', [PostController::class, 'explorar']);
 });

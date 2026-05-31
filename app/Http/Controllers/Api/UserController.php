@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\User;
+use App\Models\FollowRequest;
 
 class UserController extends Controller
 {
@@ -37,18 +38,27 @@ class UserController extends Controller
                 ->where('seguidor_id', auth()->id())
                 ->exists();
 
-            if (! $isFollowing) {
+            if ($isFollowing) {
                 return response()->json([
-                    'usuario' => [
-                        'id' => $usuario->id,
-                        'nombre' => $usuario->nombre,
-                        'avatar' => $usuario->avatar && str_starts_with($usuario->avatar, 'http') ? $usuario->avatar : null,
-                        'bio' => $usuario->bio,
-                        'is_private' => true,
-                    ],
+                    'usuario' => $usuario,
+                    'has_pending_request' => false,
                     'status' => 200
                 ], 200);
             }
+
+            $hasPendingRequest = $usuario->hasPendingFollowRequestFrom(auth()->user());
+
+            return response()->json([
+                'usuario' => [
+                    'id' => $usuario->id,
+                    'nombre' => $usuario->nombre,
+                    'avatar' => $usuario->avatar && str_starts_with($usuario->avatar, 'http') ? $usuario->avatar : null,
+                    'bio' => $usuario->bio,
+                    'is_private' => true,
+                ],
+                'has_pending_request' => $hasPendingRequest,
+                'status' => 200
+            ], 200);
         }
 
         return response()->json([
