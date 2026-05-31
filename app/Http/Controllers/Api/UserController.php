@@ -24,7 +24,11 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        $usuario = User::withCount(['posts', 'followers', 'following'])->find($id);
+        $usuario = User::withCount(['posts', 'followers', 'following'])
+            ->withExists(['followers as is_following' => function ($q) {
+                $q->where('seguidor_id', auth()->id());
+            }])
+            ->find($id);
 
         if (!$usuario) {
             return response()->json([
@@ -55,6 +59,7 @@ class UserController extends Controller
                     'avatar' => $usuario->avatar && str_starts_with($usuario->avatar, 'http') ? $usuario->avatar : null,
                     'bio' => $usuario->bio,
                     'is_private' => true,
+                    'is_following' => false,
                 ],
                 'has_pending_request' => $hasPendingRequest,
                 'status' => 200
