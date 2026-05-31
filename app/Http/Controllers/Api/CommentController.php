@@ -44,7 +44,7 @@ class CommentController extends Controller
             return response()->json(['message' => 'No encontrado'], 404);
         }
         if($comment->user_id !== Auth::id()){
-            return response()->json(['message'=>'No autorizado']);
+            return response()->json(['message'=>'No autorizado'], 403);
         }
         $comment->delete();
         return response()->json(['message' => 'Comentarion eliminado'], 200);

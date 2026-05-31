@@ -82,6 +82,8 @@ class PostController extends Controller
             'imagen' => $imagePath
         ]);
 
+        $post->load('user');
+
         return (new PostResource($post))
             ->response()
             ->setStatusCode(201);

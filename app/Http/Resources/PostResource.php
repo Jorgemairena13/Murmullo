@@ -18,8 +18,8 @@ class PostResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
 
             // Conteos de like y comentarios
-            'likes_count' => $this->whenCounted('likes'),
-            'comments_count' => $this->whenCounted('comentarios'),
+            'likes_count' => $this->likes_count ?? 0,
+            'comments_count' => $this->comentarios_count ?? 0,
 
             'is_liked' => $this->when(Auth::check(), fn() => $this->likes_exists ?? false),
 
