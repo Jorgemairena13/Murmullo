@@ -8,7 +8,7 @@ class Comment extends Model
 {
     use HasFactory;
     protected $table = 'comentarios';
-    protected $fillable = ['id','user_id','post_id','texto'];
+    protected $fillable = ['user_id', 'post_id', 'texto'];
 
     // Funcion para ver a que usuario pertenece el comentario
     public function user(){

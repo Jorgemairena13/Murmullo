@@ -32,7 +32,7 @@ class UserController extends Controller
             ], 404);
         }
 
-        if ($usuario->is_private && auth()->check()) {
+        if ($usuario->is_private && auth()->check() && auth()->id() !== $usuario->id) {
             $isFollowing = $usuario->followers()
                 ->where('seguidor_id', auth()->id())
                 ->exists();

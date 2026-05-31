@@ -92,7 +92,7 @@ class PostController extends Controller
     {
         $user->loadCount('posts');
 
-        if ($user->is_private && auth()->check()) {
+        if ($user->is_private && auth()->check() && auth()->id() !== $user->id) {
             $isFollowing = $user->followers()
                 ->where('seguidor_id', auth()->id())
                 ->exists();
