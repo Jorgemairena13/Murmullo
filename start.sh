@@ -21,5 +21,8 @@ php artisan event:cache || true
 echo "==> Ejecutando migraciones..."
 php artisan migrate --force || true
 
+echo "==> Sembrando datos iniciales..."
+php artisan db:seed --force || true
+
 echo "==> Arrancando servicios..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

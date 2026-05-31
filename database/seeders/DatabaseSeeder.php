@@ -12,68 +12,86 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (User::count() > 0) {
+            $this->command->info('Ya hay datos en la BD, se salta el seed');
+            return;
+        }
 
         $me = User::factory()->create([
             'nombre' => 'Jorge Mairena',
+            'username' => 'jorgemairena',
             'email' => 'jorgemairena13@gmail.com',
+            'bio' => 'Creador de Murmullo',
+            'avatar' => 'https://i.pravatar.cc/200?u=jorgemairena',
             'password' => bcrypt('Mairena13'),
         ]);
 
+        $usersData = [
+            ['nombre' => 'Ana García', 'username' => 'anagarcia', 'bio' => 'Fotógrafa y viajera. Capturando el mundo un click a la vez.'],
+            ['nombre' => 'Carlos López', 'username' => 'carloslopez', 'bio' => 'Desarrollador web y café adicto.'],
+            ['nombre' => 'María Rodríguez', 'username' => 'mariarodriguez', 'bio' => 'Diseñadora gráfica. Amante del arte y la tipografía.'],
+            ['nombre' => 'Pedro Sánchez', 'username' => 'pedrosanchez', 'bio' => 'Chef y foodie. La cocina es mi pasión.'],
+            ['nombre' => 'Laura Martínez', 'username' => 'lauramartinez', 'bio' => 'Escritora y lectora compulsiva.'],
+            ['nombre' => 'David Fernández', 'username' => 'davidfernandez', 'bio' => 'Músico y productor. El ruido también es música.'],
+            ['nombre' => 'Sara Torres', 'username' => 'saratorres', 'bio' => 'Yoga y meditación. En busca del equilibrio.'],
+            ['nombre' => 'Miguel Ángel Ruiz', 'username' => 'miguelruiz', 'bio' => 'Arquitecto. Construyendo sueños desde los cimientos.'],
+            ['nombre' => 'Elena Gómez', 'username' => 'elenagomez', 'bio' => 'Médica y runner. Mente sana en cuerpo sano.'],
+            ['nombre' => 'Javier Morales', 'username' => 'javimorales', 'bio' => 'Ingeniero de software. Resolviendo problemas complejos.'],
+            ['nombre' => 'Paula Castillo', 'username' => 'paulacastillo', 'bio' => 'Periodista y podcast host. Contando historias que importan.'],
+            ['nombre' => 'Adrián Navarro', 'username' => 'adriannavarro', 'bio' => 'Videógrafo y editor. La magia está en el montaje.'],
+            ['nombre' => 'Lucía Jiménez', 'username' => 'luciajimenez', 'bio' => 'Ilustradora digital. Dibujando mundos imposibles.'],
+            ['nombre' => 'Raúl Herrera', 'username' => 'raulherrera', 'bio' => 'Entrenador personal. Transformando vidas desde el gym.'],
+        ];
 
-        $users = User::factory(10)->create();
+        $users = collect([$me]);
 
+        foreach ($usersData as $data) {
+            $users->push(User::factory()->create($data));
+        }
 
-        $users->push($me);
-
+        $this->command->info('Creados ' . $users->count() . ' usuarios');
 
         foreach ($users as $user) {
-
-
-            $posts = Post::factory(rand(1, 5))->create([
-                'user_id' => $user->id
+            $posts = Post::factory(rand(3, 6))->create([
+                'user_id' => $user->id,
             ]);
 
             foreach ($posts as $post) {
-
-                $numberOfComments = rand(0, 3);
-
+                $numberOfComments = rand(0, 4);
                 if ($numberOfComments > 0) {
                     Comment::factory($numberOfComments)->create([
                         'post_id' => $post->id,
-
-                        'user_id' => $users->random()->id
+                        'user_id' => $users->where('id', '!=', $user->id)->random()->id,
                     ]);
                 }
 
-
-                $randomLikers = $users->random(rand(0, 5));
+                $randomLikers = $users->where('id', '!=', $user->id)->random(rand(1, 8));
                 foreach ($randomLikers as $liker) {
-
                     try {
                         Like::create([
                             'user_id' => $liker->id,
-                            'post_id' => $post->id
+                            'post_id' => $post->id,
                         ]);
                     } catch (\Exception $e) {
-
                     }
                 }
             }
-            foreach ($users as $user) {
-            // Cada usuario seguirá a entre 1 y 5 personas al azar de la lista
-            // (excluyéndose a sí mismo para no auto-seguirse)
-            $usersToFollow = $users->where('id', '!=', $user->id)->random(rand(1, 5));
+        }
 
-            // Usamos 'attach' para crear la relación en la tabla pivote
-            // OJO: Esto requiere que tengas la relación 'following()' en tu modelo User
+        $this->command->info('Posts, likes y comentarios creados');
+
+        foreach ($users as $user) {
+            $usersToFollow = $users
+                ->where('id', '!=', $user->id)
+                ->random(rand(3, 8));
+
             try {
                 $user->following()->attach($usersToFollow);
             } catch (\Exception $e) {
-                // Si ya lo seguía, no pasa nada
             }
         }
-        }
 
-        echo "✅ Base de datos sembrada correctamente con usuario 'jorgemairena13@gmail.com' \n";
+        $this->command->info('Relaciones de follow creadas');
+        $this->command->info("✅ Base de datos sembrada correctamente con usuario 'jorgemairena13@gmail.com'");
     }
 }
