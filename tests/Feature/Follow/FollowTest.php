@@ -30,6 +30,7 @@ test('usuario puede seguir a usuario publico', function () {
     $response->assertStatus(200)
         ->assertJson([
             'message' => 'Siguiendo a ' . $target->nombre,
+            'follow_request' => false,
         ]);
 
     $this->assertDatabaseHas('follows', [
@@ -112,6 +113,7 @@ test('seguir a usuario privado crea solicitud', function () {
     $response->assertStatus(201)
         ->assertJson([
             'message' => 'Solicitud enviada a ' . $target->nombre,
+            'follow_request' => true,
         ]);
 
     $this->assertDatabaseHas('follow_requests', [
@@ -131,10 +133,12 @@ test('seguir a usuario privado dos veces es idempotente', function () {
 
     Sanctum::actingAs($follower);
 
-    $this->postJson("/api/users/{$target->id}/follow")->assertStatus(201);
+    $this->postJson("/api/users/{$target->id}/follow")->assertStatus(201)
+        ->assertJson(['follow_request' => true]);
     $this->postJson("/api/users/{$target->id}/follow")->assertStatus(200)
         ->assertJson([
             'message' => 'Ya enviaste una solicitud a ' . $target->nombre,
+            'follow_request' => true,
         ]);
 
     $this->assertDatabaseCount('follow_requests', 1);

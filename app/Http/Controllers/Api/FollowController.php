@@ -25,6 +25,7 @@ class FollowController extends Controller
             if ($existingRequest) {
                 return response()->json([
                     'message' => 'Ya enviaste una solicitud a ' . $user->nombre,
+                    'follow_request' => true,
                 ], 200);
             }
 
@@ -35,12 +36,14 @@ class FollowController extends Controller
 
             return response()->json([
                 'message' => 'Solicitud enviada a ' . $user->nombre,
+                'follow_request' => true,
             ], 201);
         }
 
         auth()->user()->following()->syncWithoutDetaching([$user->id]);
         return response()->json([
             'message' => 'Siguiendo a ' . $user->nombre,
+            'follow_request' => false,
         ], 200);
     }
 
