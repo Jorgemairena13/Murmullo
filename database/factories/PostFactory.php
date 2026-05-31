@@ -20,7 +20,6 @@ class PostFactory extends Factory
         return [
             'texto' => $this->faker->paragraph(rand(1, 3)),
             'imagen' => 'https://picsum.photos/seed/' . Str::random(10) . '/600/600',
-            'user_id' => \App\Models\User::factory(),
         ];
     }
 }

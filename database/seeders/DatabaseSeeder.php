@@ -71,17 +71,26 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         foreach ($users as $user) {
-            $posts = Post::factory(rand(3, 6))->create([
-                'user_id' => $user->id,
-            ]);
+            try {
+                $posts = Post::factory(rand(3, 6))->create([
+                    'user_id' => $user->id,
+                ]);
+            } catch (\Exception $e) {
+                $this->command->error("Error creando posts para {$user->nombre}: " . $e->getMessage());
+                continue;
+            }
 
             foreach ($posts as $post) {
                 $numberOfComments = rand(0, 4);
                 if ($numberOfComments > 0) {
-                    Comment::factory($numberOfComments)->create([
-                        'post_id' => $post->id,
-                        'user_id' => $users->where('id', '!=', $user->id)->random()->id,
-                    ]);
+                    try {
+                        Comment::factory($numberOfComments)->create([
+                            'post_id' => $post->id,
+                            'user_id' => $users->where('id', '!=', $user->id)->random()->id,
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->command->error("Error creando comment: " . $e->getMessage());
+                    }
                 }
 
                 $randomLikers = $users->where('id', '!=', $user->id)->random(rand(1, 8));
@@ -97,7 +106,9 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $this->command->info('Posts, likes y comentarios regenerados');
+        $this->command->info('Posts creados: ' . Post::count());
+        $this->command->info('Comentarios creados: ' . Comment::count());
+        $this->command->info('Likes creados: ' . Like::count());
 
         foreach ($users as $user) {
             $usersToFollow = $users
