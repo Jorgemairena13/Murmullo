@@ -33,8 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{id}', [AuthController::class, 'destroyAccount']);
 
 
-    // Crear editar y todo
-    Route::apiResource('/posts', PostController::class);
+    // Crear editar y todo lo relacionado con posts
+    Route::apiResource('/posts', PostController::class)->except(['index']);
+    Route::post('/posts/generate-text', [PostController::class, 'generateText']);
     // Ver posts de un usuario concreto
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
 

@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Models\Post;
+use App\Ai\Agents\PostGenerator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -25,6 +26,69 @@ test('no autenticado no puede ver posts', function () {
     $response = $this->getJson('/api/posts/1');
 
     $response->assertStatus(401);
+});
+
+// ─── CREAR POST ──────────────────────────────────────────────
+
+// ─── GENERAR TEXTO CON IA ─────────────────────────────────────
+
+test('no autenticado no puede generar texto con IA', function () {
+    $file = UploadedFile::fake()->image('test.jpg');
+
+    $response = $this->postJson('/api/posts/generate-text', [
+        'imagen' => $file,
+    ]);
+
+    $response->assertStatus(401);
+});
+
+test('autenticado puede generar texto desde imagen', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $responseText = 'Atardecer increíble en la playa 🌅 #atardecer #playa #verano';
+
+    PostGenerator::fake(function ($prompt, $attachments) use ($responseText) {
+        expect($prompt)->toBe('Genera una publicación para esta imagen.');
+        expect($attachments)->toHaveCount(1);
+
+        return $responseText;
+    });
+
+    $file = UploadedFile::fake()->image('playa.jpg', 800, 600);
+
+    $response = $this->postJson('/api/posts/generate-text', [
+        'imagen' => $file,
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'texto' => $responseText,
+        ]);
+});
+
+test('generate-text requiere archivo de imagen valido', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $response = $this->postJson('/api/posts/generate-text', []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['imagen']);
+});
+
+test('generate-text rechaza archivo que no es imagen', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $file = UploadedFile::fake()->create('documento.pdf', 100);
+
+    $response = $this->postJson('/api/posts/generate-text', [
+        'imagen' => $file,
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['imagen']);
 });
 
 // ─── CREAR POST ──────────────────────────────────────────────

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PostResource;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Http\Requests\GeneratePostTextRequest;
+use App\Ai\Agents\PostGenerator;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
@@ -172,7 +174,24 @@ class PostController extends Controller
     }
 
 
-    //  Borra un post.
+    public function generateText(GeneratePostTextRequest $request)
+    {
+        $base64 = base64_encode(file_get_contents($request->file('imagen')->getPathname()));
+        $mime = $request->file('imagen')->getMimeType();
+
+        $response = PostGenerator::make()->prompt(
+            prompt: 'Genera una publicación para esta imagen.',
+            attachments: [
+                \Laravel\Ai\Files\Image::fromBase64($base64, $mime),
+            ],
+        );
+
+        return response()->json([
+            'texto' => trim($response->text),
+        ]);
+    }
+
+    //   Borra un post.
 
     public function destroy(Post $post)
     {
