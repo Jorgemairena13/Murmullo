@@ -20,6 +20,13 @@ class FollowController extends Controller
         }
 
         if ($user->is_private) {
+            if (auth()->user()->following()->whereKey($user->id)->exists()) {
+                return response()->json([
+                    'message' => 'Ya sigues a ' . $user->nombre,
+                    'follow_request' => false,
+                ], 200);
+            }
+
             $existingRequest = FollowRequest::where('seguidor_id', auth()->id())
                 ->where('seguido_id', $user->id)
                 ->first();
