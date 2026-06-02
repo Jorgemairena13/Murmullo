@@ -2,9 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\BlueprintState;
 use Illuminate\Support\Facades\Schema;
-use Pest\Arch\Blueprint as ArchBlueprint;
 
 return new class extends Migration
 {
