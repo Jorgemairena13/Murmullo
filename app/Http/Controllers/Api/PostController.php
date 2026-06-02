@@ -152,6 +152,16 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
+        if ($post->user->is_private && auth()->id() !== $post->user_id) {
+            $isFollowing = $post->user->followers()
+                ->where('seguidor_id', auth()->id())
+                ->exists();
+
+            if (!$isFollowing) {
+                return response()->json(['message' => 'No autorizado'], 403);
+            }
+        }
+
         $post->load(['user', 'comentarios.user']);
         $post->loadCount(['likes', 'comentarios']);
 
