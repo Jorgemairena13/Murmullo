@@ -97,7 +97,7 @@ test('usuario puede eliminar su propio comentario', function () {
 
     $response->assertStatus(200)
         ->assertJson([
-            'message' => 'Comentarion eliminado',
+            'message' => 'Comentario eliminado',
         ]);
 
     $this->assertDatabaseMissing('comentarios', ['id' => $comment->id]);

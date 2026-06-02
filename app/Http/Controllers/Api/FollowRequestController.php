@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FollowRequest;
+use App\Notifications\FollowRequestAccepted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,7 +39,11 @@ class FollowRequestController extends Controller
 
         Auth::user()->followers()->syncWithoutDetaching([$followRequest->seguidor_id]);
 
+        $seguidor = $followRequest->seguidor;
+
         $followRequest->delete();
+
+        $seguidor->notify(new FollowRequestAccepted(Auth::user()));
 
         return response()->json(['message' => 'Solicitud aceptada'], 200);
     }

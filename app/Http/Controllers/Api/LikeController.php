@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Notifications\PostLiked;
 use Illuminate\Http\Request;
 
 class LikeController extends Controller
@@ -13,9 +14,14 @@ class LikeController extends Controller
     {
         $user = $request->user();
 
-        // Revisar si ya existe
-        if (!$user->likes()->where('post_id', $post->id)->exists()) {
+        $isNew = !$user->likes()->where('post_id', $post->id)->exists();
+
+        if ($isNew) {
             $user->likes()->attach($post->id);
+
+            if ($post->user_id !== $user->id) {
+                $post->user->notify(new PostLiked($user, $post));
+            }
         }
 
         return response()->json([
@@ -27,7 +33,6 @@ class LikeController extends Controller
 
     public function destroy(Post $post, Request $request)
     {
-        // Borrar el like
         $request->user()->likes()->detach($post->id);
 
 

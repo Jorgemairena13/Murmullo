@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\FollowRequest;
 use App\Models\User;
+use App\Notifications\FollowRequestSent;
+use App\Notifications\UserFollowed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,6 +36,8 @@ class FollowController extends Controller
                 'seguido_id' => $user->id,
             ]);
 
+            $user->notify(new FollowRequestSent(Auth::user()));
+
             return response()->json([
                 'message' => 'Solicitud enviada a ' . $user->nombre,
                 'follow_request' => true,
@@ -41,6 +45,9 @@ class FollowController extends Controller
         }
 
         auth()->user()->following()->syncWithoutDetaching([$user->id]);
+
+        $user->notify(new UserFollowed(Auth::user()));
+
         return response()->json([
             'message' => 'Siguiendo a ' . $user->nombre,
             'follow_request' => false,

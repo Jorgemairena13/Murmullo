@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\FollowRequestController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 // Registrar usuario
@@ -61,4 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/follow-requests/{followRequest}/reject', [FollowRequestController::class, 'reject']);
     Route::get('/feed', [PostController::class, 'feed']);
     Route::get('/explorar', [PostController::class, 'explorar']);
+
+    // Notificaciones
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAsRead']);
 });
