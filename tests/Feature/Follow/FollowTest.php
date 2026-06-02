@@ -100,6 +100,8 @@ test('seguir a usuario publico dos veces es idempotente', function () {
         'seguidor_id' => $follower->id,
         'seguido_id' => $target->id,
     ]);
+
+    $this->assertDatabaseCount('notifications', 1);
 });
 
 test('seguir a usuario privado crea solicitud', function () {

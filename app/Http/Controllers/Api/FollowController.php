@@ -44,9 +44,10 @@ class FollowController extends Controller
             ], 201);
         }
 
-        auth()->user()->following()->syncWithoutDetaching([$user->id]);
-
-        $user->notify(new UserFollowed(Auth::user()));
+        if (!auth()->user()->following()->whereKey($user->id)->exists()) {
+            auth()->user()->following()->syncWithoutDetaching([$user->id]);
+            $user->notify(new UserFollowed(Auth::user()));
+        }
 
         return response()->json([
             'message' => 'Siguiendo a ' . $user->nombre,
