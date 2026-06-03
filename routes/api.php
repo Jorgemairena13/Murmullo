@@ -11,10 +11,12 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 // Registrar usuario
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])
+    ->middleware('throttle:5,1');
 
 // Logear usuario
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1');
 
 
 // Rutas protegidas  login

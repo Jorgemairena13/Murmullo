@@ -1,37 +1,45 @@
 # Murmullo — Backend API REST
 
-Backend de **Murmullo**, una red social desarrollada como Trabajo de Fin de Grado (DAW). Construido con Laravel, expone una API REST completa que consume el frontend en React.
+Backend de **Murmullo**, una red social desarrollada como Trabajo de Fin de Grado (DAW). Construido con Laravel, expone una API REST completa que consume un frontend en React.
 
-> 🔗 **Frontend:** [github.com/Jorgemairena13/murmullo_front](https://github.com/Jorgemairena13/murmullo_front) · 🌐 **Demo en producción:** [https://murmullo-front.vercel.app/](https://murmullo-front.vercel.app/)
+> **Frontend:** [github.com/Jorgemairena13/murmullo_front](https://github.com/Jorgemairena13/murmullo_front) ·
+> **Demo:** [murmullo-front.vercel.app](https://murmullo-front.vercel.app/) ·
+> **Repositorio:** [github.com/Jorgemairena13/Murmullo](https://github.com/Jorgemairena13/Murmullo)
 
 ---
 
 ## Stack tecnológico
 
-- **Framework:** Laravel 11
-- **Autenticación:** Laravel Sanctum (tokens)
+- **Framework:** Laravel 12
+- **Autenticación:** Laravel Sanctum (tokens Bearer)
 - **Base de datos:** MySQL
-- **Arquitectura:** API REST desacoplada
-- **Lenguaje:** PHP 8+
+- **Tests:** Pest (SQLite in-memory)
+- **Almacenamiento:** Cloudinary
+- **IA:** OpenAI Vision (GPT-4o-mini)
+- **Contenedores:** Docker + docker-compose
+- **PHP:** 8.3+ (producción), 8.5 (local)
 
 ---
 
 ## Funcionalidades principales
 
-- Registro e inicio de sesión con tokens Sanctum
-- Gestión de perfil de usuario (ver, editar, eliminar cuenta)
-- CRUD completo de publicaciones
-- Sistema de likes (dar y quitar)
-- Sistema de comentarios (crear y eliminar)
-- Sistema de seguimiento entre usuarios (follow / unfollow)
+- Registro e inicio de sesión con tokens Sanctum (rate limited)
+- Perfiles públicos / privados con sistema de solicitudes de seguimiento
+- CRUD completo de publicaciones con subida de imágenes a Cloudinary
+- Generación automática de texto desde imagen con IA Vision
+- Sistema de likes y comentarios
+- Sistema de seguimiento entre usuarios (follow / unfollow / solicitudes)
+- Notificaciones en tiempo real (like, comentario, follow, solicitud aceptada)
 - Feed personalizado con posts de usuarios seguidos
-- Rutas protegidas por middleware de autenticación
+- Explora posts de cuentas públicas
+- Búsqueda de usuarios por nombre
+- 78 tests automatizados (242 assertions)
 
 ---
 
-## Estructura de la API
+## API Endpoints
 
-### Autenticación (pública)
+### Autenticación (pública) — rate limited: 5 intentos/min
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
@@ -44,26 +52,28 @@ Backend de **Murmullo**, una red social desarrollada como Trabajo de Fin de Grad
 |--------|----------|-------------|
 | POST | `/api/logout` | Cerrar sesión |
 | GET | `/api/user` | Obtener usuario autenticado |
+| PUT | `/api/users/{id}` | Actualizar perfil propio |
+| DELETE | `/api/users/{id}` | Eliminar cuenta |
 
 ### Usuarios
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `/api/users/{id}` | Ver perfil de un usuario |
-| PUT | `/api/users/{id}` | Actualizar perfil propio |
-| DELETE | `/api/users/{id}` | Eliminar cuenta |
+| GET | `/api/search?q=` | Buscar usuarios por nombre |
 
 ### Publicaciones
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/posts` | Listar todas las publicaciones |
 | POST | `/api/posts` | Crear publicación |
 | GET | `/api/posts/{id}` | Ver publicación |
 | PUT | `/api/posts/{id}` | Editar publicación |
 | DELETE | `/api/posts/{id}` | Eliminar publicación |
+| POST | `/api/posts/generate-text` | Generar texto desde imagen (IA Vision) |
 | GET | `/api/users/{user}/posts` | Posts de un usuario concreto |
 | GET | `/api/feed` | Feed personalizado del usuario autenticado |
+| GET | `/api/explorar` | Posts de cuentas públicas |
 
 ### Likes
 
@@ -76,6 +86,7 @@ Backend de **Murmullo**, una red social desarrollada como Trabajo de Fin de Grad
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
+| GET | `/api/posts/{post}/comments` | Ver comentarios de una publicación |
 | POST | `/api/posts/{post}/comment` | Comentar una publicación |
 | DELETE | `/api/comment/{id}` | Eliminar un comentario |
 
@@ -86,76 +97,104 @@ Backend de **Murmullo**, una red social desarrollada como Trabajo de Fin de Grad
 | POST | `/api/users/{user}/follow` | Seguir a un usuario |
 | DELETE | `/api/users/{user}/follow` | Dejar de seguir a un usuario |
 
+### Solicitudes de seguimiento
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/follow-requests` | Solicitudes recibidas pendientes |
+| POST | `/api/follow-requests/{id}/accept` | Aceptar solicitud |
+| DELETE | `/api/follow-requests/{id}/reject` | Rechazar solicitud |
+
+### Notificaciones
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/notifications` | Listar notificaciones (paginadas) |
+| POST | `/api/notifications/read-all` | Marcar todas como leídas |
+
+### Upload
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/upload` | Subir imagen a Cloudinary |
+
 ---
 
-## Instalación local
+## Instalación
 
-### Requisitos previos
-
-- PHP 8.1+
-- Composer
-- MySQL
-
-### Pasos
+### Con Docker (recomendado)
 
 ```bash
-# 1. Clonar el repositorio
 git clone https://github.com/Jorgemairena13/Murmullo.git
 cd Murmullo
 
-# 2. Instalar dependencias
-composer install
-
-# 3. Copiar el fichero de entorno
 cp .env.example .env
+# Configurar CLOUDINARY_URL y OPENAI_API_KEY en .env
 
-# 4. Generar clave de aplicación
+docker compose up -d
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed
+```
+
+### Local
+
+```bash
+git clone https://github.com/Jorgemairena13/Murmullo.git
+cd Murmullo
+
+composer install
+cp .env.example .env
 php artisan key:generate
+# Configurar DB, CLOUDINARY_URL y OPENAI_API_KEY en .env
 
-# 5. Configurar la base de datos en .env
-DB_DATABASE=murmullo
-DB_USERNAME=tu_usuario
-DB_PASSWORD=tu_contraseña
-
-# 6. Ejecutar migraciones
 php artisan migrate
-
-# 7. (Opcional) Poblar la base de datos con datos de prueba
 php artisan db:seed
-
-# 8. Levantar el servidor
 php artisan serve
 ```
 
-La API estará disponible en `http://localhost:8000/api`
+API disponible en `http://localhost:8000/api`
+
+---
+
+## Tests
+
+```bash
+php artisan test
+```
+
+78 tests — 242 assertions. Base de datos SQLite in-memory, Cloudinary mockeado.
 
 ---
 
 ## Autenticación
 
-La API usa **Laravel Sanctum**. Para acceder a los endpoints protegidos incluye el token en cada petición:
+La API usa **Laravel Sanctum** con tokens Bearer que expiran a los 7 días:
 
 ```
 Authorization: Bearer {token}
 ```
 
-El token se obtiene al hacer login o registro satisfactorio.
+El token se obtiene al hacer login o registro.
 
 ---
 
 ## Arquitectura
 
-Este backend actúa exclusivamente como proveedor de datos vía API REST. No genera vistas HTML — toda la interfaz es responsabilidad del frontend en React.
-
 ```
-Frontend React  ←──── HTTP/JSON ────→  Backend Laravel API  ←──→  MySQL
+Frontend React (Vercel)  ←── HTTP/JSON ──→  Backend Laravel API  ←──→ MySQL
+                                                    │
+                                          Cloudinary (imágenes)
+                                          OpenAI (visión IA)
 ```
 
-La separación permite que ambas capas se desplieguen y escalen de forma independiente.
+Backend puramente API REST — sin vistas HTML. Frontend y backend se despliegan independientemente.
 
 ---
 
 ## Autor
 
 **Jorge Enrique Fernández**
-[linkedin.com/in/jorge-fernandez-dev](https://linkedin.com/in/jorge-fernandez-dev) · [jorgefernandez.vercel.app](https://jorgefernandez.vercel.app) · [github.com/Jorgemairena13](https://github.com/Jorgemairena13)
+[linkedin.com/in/jorge-fernandez-dev](https://linkedin.com/in/jorge-fernandez-dev) ·
+[jorgefernandez.vercel.app](https://jorgefernandez.vercel.app) ·
+[github.com/Jorgemairena13](https://github.com/Jorgemairena13)
