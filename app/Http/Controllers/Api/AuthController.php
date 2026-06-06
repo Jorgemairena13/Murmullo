@@ -147,7 +147,7 @@ class AuthController extends Controller
             'nombre' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:usuarios,username,' . $user->id,
             'email' => 'required|email|unique:usuarios,email,' . $user->id,
-            'bio' => 'required|string|max:500',
+            'bio' => 'nullable|string|max:500',
             'is_private' => 'required|boolean',
             'avatar' => 'nullable|image|max:51200',
             'password' => 'nullable|string|min:6|confirmed',

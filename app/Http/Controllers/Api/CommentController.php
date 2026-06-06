@@ -13,6 +13,15 @@ class CommentController extends Controller
 {
     public function index(Post $post)
     {
+        if ($post->user->is_private && auth()->id() !== $post->user_id) {
+            $isFollowing = $post->user->followers()
+                ->where('seguidor_id', auth()->id())
+                ->exists();
+            if (!$isFollowing) {
+                return response()->json(['message' => 'No autorizado'], 403);
+            }
+        }
+
         $comentarios = $post->comentarios()
             ->with('user')
             ->latest()
@@ -22,6 +31,15 @@ class CommentController extends Controller
 
     public function store(Request $request, Post $post)
     {
+        if ($post->user->is_private && auth()->id() !== $post->user_id) {
+            $isFollowing = $post->user->followers()
+                ->where('seguidor_id', auth()->id())
+                ->exists();
+            if (!$isFollowing) {
+                return response()->json(['message' => 'No autorizado'], 403);
+            }
+        }
+
         $request->validate([
             'texto' => 'required|string|max:255'
         ]);

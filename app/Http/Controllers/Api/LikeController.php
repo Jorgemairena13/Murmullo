@@ -12,6 +12,15 @@ class LikeController extends Controller
 {
     public function store(Post $post, Request $request)
     {
+        if ($post->user->is_private && $request->user()->id !== $post->user_id) {
+            $isFollowing = $post->user->followers()
+                ->where('seguidor_id', $request->user()->id)
+                ->exists();
+            if (!$isFollowing) {
+                return response()->json(['message' => 'No autorizado'], 403);
+            }
+        }
+
         $user = $request->user();
         $isNew = !$user->likes()->where('post_id', $post->id)->exists();
         if ($isNew) {
@@ -28,6 +37,15 @@ class LikeController extends Controller
 
     public function destroy(Post $post, Request $request)
     {
+        if ($post->user->is_private && $request->user()->id !== $post->user_id) {
+            $isFollowing = $post->user->followers()
+                ->where('seguidor_id', $request->user()->id)
+                ->exists();
+            if (!$isFollowing) {
+                return response()->json(['message' => 'No autorizado'], 403);
+            }
+        }
+
         $request->user()->likes()->detach($post->id);
         return response()->json([
             'message' => 'El post tiene un like menos'
