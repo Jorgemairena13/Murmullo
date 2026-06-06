@@ -58,6 +58,7 @@ class AuthController extends Controller
             'usuario' => [
                 'id' => $usuario->id,
                 'nombre' => $usuario->nombre,
+                'username' => $usuario->username,
                 'email' => $usuario->email,
                 'bio' => $usuario->bio,
                 'is_private' => $usuario->is_private,
@@ -111,7 +112,18 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
             'message' => 'Login correcto',
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'nombre' => $user->nombre,
+                'username' => $user->username,
+                'email' => $user->email,
+                'bio' => $user->bio,
+                'is_private' => $user->is_private,
+                'avatar' => $user->avatar,
+                'posts_count' => $user->posts_count ?? 0,
+                'followers_count' => $user->followers_count ?? 0,
+                'following_count' => $user->following_count ?? 0,
+            ],
             'token' => $token,
             'status' => 200
         ], 200);
@@ -129,10 +141,21 @@ class AuthController extends Controller
 
     public function profile(Request $request)
     {
-        $usuario = $request->user()->loadCount(['posts', 'followers', 'following']);
+        $user = $request->user()->loadCount(['posts', 'followers', 'following']);
 
         return response()->json([
-            'usuario' => $usuario,
+            'usuario' => [
+                'id' => $user->id,
+                'nombre' => $user->nombre,
+                'username' => $user->username,
+                'email' => $user->email,
+                'bio' => $user->bio,
+                'is_private' => $user->is_private,
+                'avatar' => $user->avatar,
+                'posts_count' => $user->posts_count,
+                'followers_count' => $user->followers_count,
+                'following_count' => $user->following_count,
+            ],
             'status' => 200
         ], 200);
     }
@@ -177,7 +200,7 @@ class AuthController extends Controller
         $user->save();
         return response()->json([
             'message' => 'Usuario actualizado correctamente',
-            'users' => $user,
+            'usuario' => $user,
             'status' => 200
         ], 200);
     }

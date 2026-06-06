@@ -24,6 +24,33 @@ test('no autenticado no puede crear comentario', function () {
     $response->assertStatus(401);
 });
 
+test('no puede comentar en post de cuenta privada sin seguir', function () {
+    $privateUser = User::factory()->create(['is_private' => true]);
+    $privatePost = Post::factory()->create(['user_id' => $privateUser->id]);
+
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $response = $this->postJson("/api/posts/{$privatePost->id}/comment", [
+        'texto' => 'Comentario no autorizado',
+    ]);
+
+    $response->assertStatus(403);
+});
+
+test('no puede ver comentarios de post de cuenta privada sin seguir', function () {
+    $privateUser = User::factory()->create(['is_private' => true]);
+    $privatePost = Post::factory()->create(['user_id' => $privateUser->id]);
+    Comment::factory()->create(['post_id' => $privatePost->id]);
+
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $response = $this->getJson("/api/posts/{$privatePost->id}/comments");
+
+    $response->assertStatus(403);
+});
+
 test('no autenticado no puede eliminar comentario', function () {
     $comment = Comment::factory()->create(['post_id' => $this->post->id]);
 

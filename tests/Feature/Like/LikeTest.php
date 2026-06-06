@@ -16,6 +16,32 @@ test('no autenticado no puede dar like', function () {
     $response->assertStatus(401);
 });
 
+test('no puede dar like a post de cuenta privada sin seguir', function () {
+    $privateUser = User::factory()->create(['is_private' => true]);
+    $privatePost = Post::factory()->create(['user_id' => $privateUser->id]);
+
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $response = $this->postJson("/api/posts/{$privatePost->id}/like");
+
+    $response->assertStatus(403);
+});
+
+test('no puede quitar like de post de cuenta privada sin seguir', function () {
+    $privateUser = User::factory()->create(['is_private' => true]);
+    $privatePost = Post::factory()->create(['user_id' => $privateUser->id]);
+    $user = User::factory()->create();
+
+    $user->likes()->attach($privatePost);
+
+    Sanctum::actingAs($user);
+
+    $response = $this->deleteJson("/api/posts/{$privatePost->id}/like");
+
+    $response->assertStatus(403);
+});
+
 test('no autenticado no puede quitar like', function () {
     $post = Post::factory()->create(['user_id' => $this->postAuthor->id]);
 
