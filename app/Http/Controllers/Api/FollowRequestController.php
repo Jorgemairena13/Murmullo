@@ -16,7 +16,6 @@ class FollowRequestController extends Controller
             ->with('seguidor')
             ->latest()
             ->get();
-
         return response()->json([
             'data' => $requests->map(fn ($r) => [
                 'id' => $r->id,
@@ -36,15 +35,10 @@ class FollowRequestController extends Controller
         if ($followRequest->seguido_id !== Auth::id()) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
-
         Auth::user()->followers()->syncWithoutDetaching([$followRequest->seguidor_id]);
-
         $seguidor = $followRequest->seguidor;
-
         $followRequest->delete();
-
         $seguidor->notify(new FollowRequestAccepted(Auth::user()));
-
         return response()->json(['message' => 'Solicitud aceptada'], 200);
     }
 
@@ -53,9 +47,7 @@ class FollowRequestController extends Controller
         if ($followRequest->seguido_id !== Auth::id()) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
-
         $followRequest->delete();
-
         return response()->json(['message' => 'Solicitud rechazada'], 200);
     }
 }

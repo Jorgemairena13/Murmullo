@@ -6,29 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('likes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // Referencia a 'usuarios'
-            $table->unsignedBigInteger('post_id'); // Referencia a 'posts'
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('post_id');
             $table->timestamps();
-
-
-
 
             $table->foreign('user_id')
                 ->references('id')
                 ->on('usuarios')
                 ->onDelete('cascade');
 
-
             $table->foreign('post_id')
                 ->references('id')
                 ->on('posts')
                 ->onDelete('cascade');
-
 
             $table->unique(['user_id', 'post_id']);
         });

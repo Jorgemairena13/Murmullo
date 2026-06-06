@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -11,11 +10,9 @@ class NotificationController extends Controller
     public function index()
     {
         $user = Auth::user();
-
         $notifications = $user->notifications()
             ->latest()
             ->paginate(20);
-
         return response()->json([
             'data' => $notifications->map(fn ($n) => [
                 'id' => $n->id,
@@ -37,7 +34,6 @@ class NotificationController extends Controller
     public function markAsRead()
     {
         Auth::user()->unreadNotifications->markAsRead();
-
         return response()->json(['message' => 'Notificaciones marcadas como leídas'], 200);
     }
 }

@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('follows',function(Blueprint $table) {
+        Schema::create('follows', function (Blueprint $table) {
             $table->unsignedBigInteger('seguidor_id');
             $table->unsignedBigInteger('seguido_id');
 
             $table->timestamps();
 
-            // Claves foraneas
             $table->foreign('seguidor_id')
                   ->references('id')
                   ->on('usuarios')
@@ -35,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('follows');
     }
 };

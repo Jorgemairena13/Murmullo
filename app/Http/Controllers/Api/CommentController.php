@@ -17,7 +17,6 @@ class CommentController extends Controller
             ->with('user')
             ->latest()
             ->get();
-
         return response()->json(['data' => $comentarios], 200);
     }
 
@@ -26,16 +25,13 @@ class CommentController extends Controller
         $request->validate([
             'texto' => 'required|string|max:255'
         ]);
-
         $comment = $post->comentarios()->create([
             'texto' => $request->texto,
             'user_id' => Auth::id()
         ]);
-
         if ($post->user_id !== Auth::id()) {
             $post->user->notify(new PostCommented(Auth::user(), $post, $request->texto));
         }
-
         return response()->json($comment->load('user'), 201);
     }
 

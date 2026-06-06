@@ -16,7 +16,6 @@ class UpdatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Solo actualizar texto
             'texto' => 'nullable|string|max:1000'
         ];
     }

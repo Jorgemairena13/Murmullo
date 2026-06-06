@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -14,7 +13,6 @@ class UploadController extends Controller
         $validator = Validator::make($request->all(), [
             'photo' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Error de validación',
@@ -22,10 +20,8 @@ class UploadController extends Controller
                 'status' => 400
             ], 400);
         }
-
         $path = $request->file('photo')->store('uploads', 'public');
         $url = Storage::disk('public')->url($path);
-
         return response()->json([
             'url' => $url,
             'status' => 200

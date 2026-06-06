@@ -1,5 +1,4 @@
 <?php
-
 namespace Database\Seeders;
 
 use App\Models\Post;
@@ -10,12 +9,9 @@ class User1PostsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Asegurarse de que el usuario 1 exista
         $user = User::find(1);
         if (!$user) return;
-
-        $numPosts = 50; // número de posts a generar
-
+        $numPosts = 50;
         for ($i = 1; $i <= $numPosts; $i++) {
             Post::create([
                 'user_id' => $user->id,

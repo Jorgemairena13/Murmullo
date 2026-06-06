@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comentarios',function (Blueprint $table){
+        Schema::create('comentarios', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('post_id');
@@ -23,6 +23,11 @@ return new class extends Migration
                   ->on('usuarios')
                   ->onDelete('cascade');
 
+            $table->foreign('post_id')
+                  ->references('id')
+                  ->on('posts')
+                  ->onDelete('cascade');
+
         });
     }
 
@@ -31,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('comentarios');
     }
 };

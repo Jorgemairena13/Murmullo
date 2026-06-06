@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -10,9 +9,6 @@ use App\Models\FollowRequest;
 
 class UserController extends Controller
 {
-
-
-    // Sacar todos los usuarios
     public function index()
     {
         $usuarios = User::all();
@@ -29,19 +25,16 @@ class UserController extends Controller
                 $q->where('seguidor_id', auth()->id());
             }])
             ->find($id);
-
         if (!$usuario) {
             return response()->json([
                 'message' => 'Usuario no encontrado',
                 'status' => 404
             ], 404);
         }
-
         if ($usuario->is_private && auth()->check() && auth()->id() !== $usuario->id) {
             $isFollowing = $usuario->followers()
                 ->where('seguidor_id', auth()->id())
                 ->exists();
-
             if ($isFollowing) {
                 return response()->json([
                     'usuario' => $usuario,
@@ -49,9 +42,7 @@ class UserController extends Controller
                     'status' => 200
                 ], 200);
             }
-
             $hasPendingRequest = $usuario->hasPendingFollowRequestFrom(auth()->user());
-
             return response()->json([
                 'usuario' => [
                     'id' => $usuario->id,
@@ -65,7 +56,6 @@ class UserController extends Controller
                 'status' => 200
             ], 200);
         }
-
         return response()->json([
             'usuario' => $usuario,
             'status' => 200
@@ -77,9 +67,7 @@ class UserController extends Controller
         $request->validate([
             'query' => 'required|string|min:1',
         ]);
-
         $query = $request->query('query');
-
         $users = User::where(function ($q) use ($query) {
                 $q->where('nombre', 'like', "%{$query}%")
                   ->orWhere('username', 'like', "%{$query}%");
@@ -90,7 +78,6 @@ class UserController extends Controller
             }])
             ->withCount(['posts', 'followers', 'following'])
             ->paginate(15);
-
         return response()->json([
             'users' => $users->items(),
             'pagination' => [

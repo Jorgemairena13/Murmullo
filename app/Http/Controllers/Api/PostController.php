@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -14,27 +13,19 @@ use App\Http\Requests\GeneratePostTextRequest;
 use App\Ai\Agents\PostGenerator;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
-
-
-
 class PostController extends Controller
 {
-    // Feed principal del usuario
     public function feed()
     {
         $user = Auth::user();
-
         $followedUserIds = $user->following()->pluck('usuarios.id');
-
         $ids = $followedUserIds->push($user->id);
-
         $posts = Post::whereIn('user_id', $ids)
             ->with('user')
             ->withCount(['likes', 'comentarios'])
             ->withExists(['likes' => fn($q) => $q->where('user_id', auth()->id())])
             ->latest()
             ->paginate(10);
-
         return response()->json([
             'data' => PostResource::collection($posts),
             'pagination' => [
@@ -48,7 +39,6 @@ class PostController extends Controller
         ], 200);
     }
 
-    // Explorar posts de cuentas públicas
     public function explorar()
     {
         $posts = Post::whereHas('user', fn($q) => $q->where('is_private', false))
@@ -57,7 +47,6 @@ class PostController extends Controller
             ->withExists(['likes' => fn($q) => $q->where('user_id', auth()->id())])
             ->latest()
             ->paginate(20);
-
         return response()->json([
             'data' => PostResource::collection($posts),
             'pagination' => [
@@ -71,36 +60,29 @@ class PostController extends Controller
         ], 200);
     }
 
-    // Guarda un post nuevo
     public function store(StorePostRequest $request)
     {
         $imagePath = Cloudinary::uploadApi()->upload(
             $request->file('imagen')->getPathname(),
             ['folder' => 'murmullo/posts']
         )['secure_url'];
-
         $post = $request->user()->posts()->create([
             'texto' => $request->validated('texto'),
             'imagen' => $imagePath
         ]);
-
         $post->load('user');
-
         return (new PostResource($post))
             ->response()
             ->setStatusCode(201);
     }
 
-    // Mostrar post de usuario
     public function getUserPosts(User $user)
     {
         $user->loadCount('posts');
-
         if ($user->is_private && auth()->check() && auth()->id() !== $user->id) {
             $isFollowing = $user->followers()
                 ->where('seguidor_id', auth()->id())
                 ->exists();
-
             if (! $isFollowing) {
                 return response()->json([
                     'user' => [
@@ -120,14 +102,12 @@ class PostController extends Controller
                 ]);
             }
         }
-
         $posts = $user->posts()
             ->with('user')
             ->withCount('likes')
             ->withExists(['likes' => fn($q) => $q->where('user_id', auth()->id())])
             ->latest()
             ->paginate(6);
-
         $userData = [
             'id' => $user->id,
             'nombre' => $user->nombre,
@@ -135,7 +115,6 @@ class PostController extends Controller
             'bio' => $user->bio,
             'posts_count' => $user->posts_count
         ];
-        // Devolver post paginados
         return response()->json([
             'user' => $userData,
             'posts' => [
@@ -148,7 +127,6 @@ class PostController extends Controller
             ]
         ]);
     }
-
 
     public function show(Post $post)
     {
@@ -168,21 +146,12 @@ class PostController extends Controller
         return new PostResource($post);
     }
 
-
-    //   Actualizar texto
-
     public function update(UpdatePostRequest $request, Post $post)
     {
-
         $this->authorize('update', $post);
-
-
         $post->update($request->validated());
-
-
         return new PostResource($post);
     }
-
 
     public function generateText(GeneratePostTextRequest $request)
     {
@@ -195,20 +164,14 @@ class PostController extends Controller
                 \Laravel\Ai\Files\Image::fromBase64($base64, $mime),
             ],
         );
-
         return response()->json([
             'texto' => trim($response->text),
         ]);
     }
 
-    //   Borra un post.
-
     public function destroy(Post $post)
     {
-        // Ver si esta autorizado
         $this->authorize('delete', $post);
-
-        // Borrar imagen de Cloudinary
         if ($post->imagen) {
             $publicId = preg_replace(
                 '#\.[a-z]+$#', '',
@@ -216,11 +179,7 @@ class PostController extends Controller
             );
             Cloudinary::uploadApi()->destroy($publicId);
         }
-
-        // Borrar de la base de datos
         $post->delete();
-
-        // Devolver respuesta
         return response()->json(null, 204);
     }
 }

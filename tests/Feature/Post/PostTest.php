@@ -28,8 +28,6 @@ test('no autenticado no puede ver posts', function () {
     $response->assertStatus(401);
 });
 
-// ─── CREAR POST ──────────────────────────────────────────────
-
 // ─── GENERAR TEXTO CON IA ─────────────────────────────────────
 
 test('no autenticado no puede generar texto con IA', function () {

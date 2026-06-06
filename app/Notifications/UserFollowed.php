@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Notifications;
 
 use App\Models\User;
@@ -9,7 +8,6 @@ use Illuminate\Notifications\Notification;
 class UserFollowed extends Notification
 {
     use Queueable;
-
     public function __construct(
         public User $actor,
     ) {}
