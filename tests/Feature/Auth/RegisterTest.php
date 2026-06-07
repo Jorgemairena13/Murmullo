@@ -13,7 +13,7 @@ test('usuario puede registrarse', function () {
 
     $response->assertStatus(201)
         ->assertJsonStructure([
-            'usuario' => ['id', 'nombre', 'email', 'avatar', 'bio'],
+            'usuario' => ['id', 'nombre', 'email', 'avatar_url', 'bio'],
             'token',
             'status',
         ]);
