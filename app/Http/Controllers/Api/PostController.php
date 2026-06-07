@@ -140,7 +140,7 @@ class PostController extends Controller
             }
         }
 
-        $post->load(['user', 'comentarios.user']);
+        $post->load('user');
         $post->loadCount(['likes', 'comentarios']);
 
         return new PostResource($post);

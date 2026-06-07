@@ -8,6 +8,7 @@ use App\Notifications\FollowRequestSent;
 use App\Notifications\UserFollowed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FollowController extends Controller
 {
@@ -42,10 +43,12 @@ class FollowController extends Controller
                 'follow_request' => true,
             ], 201);
         }
-        if (!auth()->user()->following()->whereKey($user->id)->exists()) {
-            auth()->user()->following()->syncWithoutDetaching([$user->id]);
-            $user->notify(new UserFollowed(Auth::user()));
-        }
+        DB::transaction(function () use ($user) {
+            if (!auth()->user()->following()->whereKey($user->id)->exists()) {
+                auth()->user()->following()->syncWithoutDetaching([$user->id]);
+                $user->notify(new UserFollowed(Auth::user()));
+            }
+        });
         return response()->json([
             'message' => 'Siguiendo a ' . $user->nombre,
             'follow_request' => false,

@@ -35,7 +35,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::apiResource('/posts', PostController::class)->except(['index']);
-    Route::post('/posts/generate-text', [PostController::class, 'generateText']);
+    Route::post('/posts/generate-text', [PostController::class, 'generateText'])
+        ->middleware('throttle:5,1');
     Route::get('/users/{user}/posts', [PostController::class, 'getUserPosts']);
 
     Route::post('/posts/{post}/like', [LikeController::class, 'store']);

@@ -25,8 +25,16 @@ class CommentController extends Controller
         $comentarios = $post->comentarios()
             ->with('user')
             ->latest()
-            ->get();
-        return response()->json(['data' => $comentarios], 200);
+            ->paginate(15);
+        return response()->json([
+            'data' => $comentarios->items(),
+            'pagination' => [
+                'current_page' => $comentarios->currentPage(),
+                'last_page' => $comentarios->lastPage(),
+                'per_page' => $comentarios->perPage(),
+                'total' => $comentarios->total(),
+            ],
+        ], 200);
     }
 
     public function store(Request $request, Post $post)

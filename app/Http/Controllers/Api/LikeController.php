@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Notifications\PostLiked;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 
 class LikeController extends Controller
@@ -22,14 +23,18 @@ class LikeController extends Controller
         }
 
         $user = $request->user();
-        $isNew = !$user->likes()->where('post_id', $post->id)->exists();
-        if ($isNew) {
-            $user->likes()->attach($post->id);
 
-            if ($post->user_id !== $user->id) {
-                $post->user->notify(new PostLiked($user, $post));
+        DB::transaction(function () use ($user, $post) {
+            $isNew = !$user->likes()->where('post_id', $post->id)->exists();
+            if ($isNew) {
+                $user->likes()->attach($post->id);
+
+                if ($post->user_id !== $user->id) {
+                    $post->user->notify(new PostLiked($user, $post));
+                }
             }
-        }
+        });
+
         return response()->json([
             'message' => 'El post tiene un like más'
         ], 201);
