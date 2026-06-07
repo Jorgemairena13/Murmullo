@@ -11,6 +11,7 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
+            'username' => $this->username,
             'avatar_url' => $this->avatar && str_starts_with($this->avatar, 'http') ? $this->avatar : null,
         ];
     }

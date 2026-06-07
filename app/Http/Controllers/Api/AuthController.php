@@ -200,7 +200,15 @@ class AuthController extends Controller
         $user->save();
         return response()->json([
             'message' => 'Usuario actualizado correctamente',
-            'usuario' => $user,
+            'usuario' => [
+                'id' => $user->id,
+                'nombre' => $user->nombre,
+                'username' => $user->username,
+                'email' => $user->email,
+                'bio' => $user->bio,
+                'is_private' => $user->is_private,
+                'avatar_url' => $user->avatar && str_starts_with($user->avatar, 'http') ? $user->avatar : null,
+            ],
             'status' => 200
         ], 200);
     }
