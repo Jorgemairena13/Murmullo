@@ -88,6 +88,7 @@ class PostController extends Controller
                     'user' => [
                         'id' => $user->id,
                         'nombre' => $user->nombre,
+                        'username' => $user->username,
                         'avatar_url' => $user->avatar && str_starts_with($user->avatar, 'http') ? $user->avatar : null,
                         'bio' => $user->bio,
                         'is_private' => true,
@@ -111,6 +112,7 @@ class PostController extends Controller
         $userData = [
             'id' => $user->id,
             'nombre' => $user->nombre,
+            'username' => $user->username,
             'avatar_url' => $user->avatar && str_starts_with($user->avatar, 'http') ? $user->avatar : null,
             'bio' => $user->bio,
             'posts_count' => $user->posts_count

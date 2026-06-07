@@ -58,6 +58,7 @@ class UserController extends Controller
                 'usuario' => [
                     'id' => $usuario->id,
                     'nombre' => $usuario->nombre,
+                    'username' => $usuario->username,
                     'avatar_url' => $usuario->avatar && str_starts_with($usuario->avatar, 'http') ? $usuario->avatar : null,
                     'bio' => $usuario->bio,
                     'is_private' => true,
